@@ -20,14 +20,20 @@ Autonomous coding agents reading this tracker MUST adhere to these operational c
 ---
 
 ## Phase 1: Workspace & PostgreSQL Database Foundation
-- [ ] **Task 1.1:** Initialize monorepo directory layout (`backend/`, `frontend/`, root configuration, `.gitignore`).
-- [ ] **Task 1.2:** Configure Node.js backend workspace with `express`, `pg`, `cors`, `dotenv`, and developer tooling (`nodemon`).
-- [ ] **Task 1.3:** Bootstrap frontend workspace using Vite (`react`), Tailwind CSS, `lucide-react`, and `react-router-dom`.
-- [ ] **Task 1.4:** Write PostgreSQL relational schema (`schema.sql`) covering the 5 core tables (`teams`, `judges`, `rounds`, `matches`, `match_participants`) with strict composite unique constraints.
-- [ ] **Task 1.5:** Implement automated database truncation reset (`reset.js`) and realistic demo seed script (`seed.js`) generating 8 teams and 3 chair judges.
+- [x] **Task 1.1:** Initialize monorepo directory layout (`backend/`, `frontend/`, root configuration, `.gitignore`).
+- [x] **Task 1.2:** Configure Node.js backend workspace with `express`, `pg`, `cors`, `dotenv`, and developer tooling (`nodemon`).
+- [x] **Task 1.3:** Bootstrap frontend workspace using Vite (`react`), Tailwind CSS, `lucide-react`, and `react-router-dom`.
+- [x] **Task 1.4:** Write PostgreSQL relational schema (`schema.sql`) covering the 5 core tables (`teams`, `judges`, `rounds`, `matches`, `match_participants`) with strict composite unique constraints.
+- [x] **Task 1.5:** Implement automated database truncation reset (`reset.js`) and realistic demo seed script (`seed.js`) generating 8 teams and 3 chair judges.
 
 *Verification Notes:*
-> Migration executes without syntax errors. `npm run db:seed` inserts exactly 8 teams and 3 judges. `npm run db:reset` cleanly truncates all 5 tables via `RESTART IDENTITY CASCADE`. PostgreSQL composite unique constraints enforce: (1) no duplicate benches per room (`match_id, bench_position`), (2) no duplicate teams per room (`match_id, team_id`), and (3) no duplicate ranks per room (`match_id, rank`). Zero orphaned foreign keys.
+> All Phase 1 verification steps executed and passed:
+> 1. `npm run db:migrate` -> Successfully executed `schema.sql` against Neon PostgreSQL; created tables `teams`, `judges`, `rounds`, `matches`, `match_participants` with composite unique constraints (`uq_round_judge`, `uq_match_bench`, `uq_match_team`, `uq_match_rank`).
+> 2. `npm run db:seed` -> Successfully seeded 8 university teams and 3 chair judges.
+> 3. Neon DB query output: `Teams: 8 Judges: 3` verified via inline Node pg query.
+> 4. `npm run db:reset` -> Cleanly executed `TRUNCATE TABLE teams, judges, rounds, matches, match_participants RESTART IDENTITY CASCADE;` returning `Teams: 0 Judges: 0`.
+> 5. `npm run db:seed` -> Re-seeded test data (`Teams: 8 Judges: 3`) ready for Phase 2.
+> 6. `npm run build` (frontend) -> Vite production build compiled cleanly with 0 JSX/CSS errors (`dist/index.html`, `dist/assets/index-*.css`, `dist/assets/index-*.js`).
 
 ---
 

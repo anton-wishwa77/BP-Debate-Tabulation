@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Sky & Canvas Foundation */
+  --color-canvas-marble: #F8FAFC;
+  --color-canvas-parchment: #FDFBF7;
+  --color-sky-light: #E1EDF6;
+  --color-sky-blue: #BDD5E7;
+
+  /* Renaissance Metallic & Accent */
+  --color-gold-deep: #B59A57;
+  --color-gold-light: #D9C383;
+
+  /* High-Contrast Ink Neutrals */
+  --color-ink-900: #1A242F;
+  --color-ink-800: #2D3945;
+  --color-ink-600: #5A6874;
+  --color-ink-400: #93A2B0;
+
+  /* Custom BP Bench Scrolls (Crest Color mapping) */
+  --color-bench-og: #3A7CA5;
+  --color-bench-og-bg: #E9F2F7;
+  --color-bench-oo: #9C3A3A;
+  --color-bench-oo-bg: #F7EAEB;
+  --color-bench-cg: #2A3A5C;
+  --color-bench-cg-bg: #EBEFF5;
+  --color-bench-co: #8E522C;
+  --color-bench-co-bg: #F5ECE8;
+
+  /* Antique Typography System */
+  --font-serif: "Cormorant Garamond", "Playfair Display", Georgia, serif;
+  --font-roman: "Cinzel", "Times New Roman", serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background-color: var(--color-canvas-marble);
+  color: var(--color-ink-800);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

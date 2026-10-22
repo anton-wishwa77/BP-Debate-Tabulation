@@ -1,0 +1,29 @@
+{
+  "name": "bp-tab-system-backend",
+  "version": "1.0.0",
+  "description": "Backend API for Forum Aeterna - British Parliamentary Debate Tabulation System",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "db:migrate": "node src/db/migrate.js",
+    "db:seed": "node src/db/seed.js",
+    "db:reset": "node src/db/reset.js"
+  },
+  "keywords": [
+    "debate",
+    "british-parliamentary",
+    "tabulation"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}
