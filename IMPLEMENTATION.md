@@ -38,26 +38,51 @@ Autonomous coding agents reading this tracker MUST adhere to these operational c
 ---
 
 ## Phase 2: Core Admin CRUD APIs & Swing Balancer
-- [ ] **Task 2.1:** Implement Express application bootstrap with CORS headers, JSON body parsing, and centralized error-handling middleware.
-- [ ] **Task 2.2:** Build complete RESTful CRUD endpoints for `Teams` (`/api/teams`) with dynamic calculations for rounds played.
-- [ ] **Task 2.3:** Build complete RESTful CRUD endpoints for `Judges` (`/api/judges`) including 4-digit PIN assignment and active status toggles.
-- [ ] **Task 2.4:** Implement Rule of 4 Swing Balancer (`POST /api/teams/swing`) computing $(4 - (N \pmod 4)) \pmod 4$ to inject dummy swing teams automatically.
-- [ ] **Task 2.5:** Connect admin maintenance routes (`POST /api/admin/seed`, `POST /api/admin/reset`) to backend database utility scripts.
+- [x] **Task 2.1:** Implement Express application bootstrap with CORS headers, JSON body parsing, and centralized error-handling middleware.
+- [x] **Task 2.2:** Build complete RESTful CRUD endpoints for `Teams` (`/api/teams`) with dynamic calculations for rounds played.
+- [x] **Task 2.3:** Build complete RESTful CRUD endpoints for `Judges` (`/api/judges`) including 4-digit PIN assignment and active status toggles.
+- [x] **Task 2.4:** Implement Rule of 4 Swing Balancer (`POST /api/teams/swing`) computing $(4 - (N \pmod 4)) \pmod 4$ to inject dummy swing teams automatically.
+- [x] **Task 2.5:** Connect admin maintenance routes (`POST /api/admin/seed`, `POST /api/admin/reset`) to backend database utility scripts.
 
 *Verification Notes:*
-> All endpoints respond with appropriate HTTP status codes (200, 201, 400, 404). Testing swing balancer with 1, 5, 6, or 7 teams brings the total to a multiple of 4 ($N \pmod 4 === 0$) with `is_swing = true`. Unique team names and judge usernames are strictly validated at the controller level with clear error payloads.
+> All Phase 2 verification steps executed and passed:
+> 1. Express bootstrap verified on port 5000 with CORS and centralized error handling (`{ error: err.message }`).
+> 2. Admin maintenance endpoints verified:
+>    - `POST /api/admin/reset` -> `{"message":"Database reset completed successfully. All 5 tables truncated."}`
+>    - `POST /api/admin/seed` -> `{"message":"Database seeded successfully","teams":8,"judges":3}`
+> 3. Team creation verified:
+>    - `POST /api/teams` -> `{"team_id":9,"team_name":"Peradeniya A","institution":"University of Peradeniya","speaker_1_name":"Sahan","speaker_2_name":"Kavindu","is_swing":false}` (HTTP 201)
+> 4. Swing Balancer verified:
+>    - `POST /api/teams/swing` (with 9 teams) -> injected 3 swing teams (`Swing Team A`, `Swing Team B`, `Swing Team C`) with `is_swing = true`, bringing count to 12 (divisible by 4).
+>    - `POST /api/teams/swing` (with 12 teams) -> `{"message":"Team count is already divisible by 4","added":0}` (HTTP 200).
+> 5. Judges CRUD and active toggle verified:
+>    - `POST /api/judges` -> `{"judge_id":4,"judge_name":"Dinesh Kumar","institution":"Faculty of Law","username":"dinesh_k","pin":"4321","is_active":true}` (HTTP 201)
+>    - `GET /api/judges` -> lists all judges with active status.
+>    - `PUT /api/judges/4` -> successfully toggles `is_active: false` and `is_active: true` (HTTP 200).
+> 6. Validation and error handling verified:
+>    - Duplicate team name returns HTTP 400: `{"error":"Team name already exists"}`
+>    - Duplicate judge username returns HTTP 400: `{"error":"Judge username already exists"}`
+>    - Incomplete request payloads return HTTP 400 with clean descriptive messages.
+>    - Non-existent IDs on PUT/DELETE return clean HTTP 404.
 
 ---
 
 ## Phase 3: British Parliamentary Pairing Engine (Backend)
-- [ ] **Task 3.1:** Implement pre-draw constraint validator in `pairingService.js` verifying $N > 0$, $N \pmod 4 === 0$, and available chair judges $\ge N / 4$.
-- [ ] **Task 3.2:** Build Round 1 Random Draw engine using Fisher-Yates array shuffling and initial bench assignment (`OG`, `OO`, `CG`, `CO`).
-- [ ] **Task 3.3:** Build Round 2+ Swiss Power-Pairing engine ordering teams by cumulative team points ($\text{primary}$) and cumulative speaker scores ($\text{secondary tie-breaker}$).
-- [ ] **Task 3.4:** Implement bracket pull-up resolver and bench equity allocator to balance Government/Opposition and Opening/Closing appearances across rounds.
-- [ ] **Task 3.5:** Encapsulate round, match, and participant creation inside an atomic PostgreSQL transaction (`BEGIN ... COMMIT`) exposed at `POST /api/rounds/generate`.
+- [x] **Task 3.1:** Implement pre-draw constraint validator in `pairingService.js` verifying $N > 0$, $N \pmod 4 === 0$, and available chair judges $\ge N / 4$.
+- [x] **Task 3.2:** Build Round 1 Random Draw engine using Fisher-Yates array shuffling and initial bench assignment (`OG`, `OO`, `CG`, `CO`).
+- [x] **Task 3.3:** Build Round 2+ Swiss Power-Pairing engine ordering teams by cumulative team points ($\text{primary}$) and cumulative speaker scores ($\text{secondary tie-breaker}$).
+- [x] **Task 3.4:** Implement bracket pull-up resolver and bench equity allocator to balance Government/Opposition and Opening/Closing appearances across rounds.
+- [x] **Task 3.5:** Encapsulate round, match, and participant creation inside an atomic PostgreSQL transaction (`BEGIN ... COMMIT`) exposed at `POST /api/rounds/generate`.
 
 *Verification Notes:*
-> Generating Round 1 cleanly assigns 8 teams across 2 rooms with 4 distinct benches and 1 chair judge per room. Attempting Round 2 generation before all Round 1 ballots are confirmed throws HTTP 400. Slicing ordered teams into rooms of 4 naturally pulls up the highest-speaking 2nd-place teams into Room 1 to compete against the two 1st-place teams. All database records persist atomically with zero partial draws on failure.
+> All Phase 3 verification steps executed and passed:
+> 1. Pre-draw validator (`pairingService.validatePreDraw`) enforces team count divisibility by 4, judge availability ($J \ge N / 4$), and sequential round completion.
+> 2. Round 1 draw (`POST /api/rounds/generate`) cleanly generated 2 rooms with 4 distinct benches (`OG`, `OO`, `CG`, `CO`) across 8 seeded teams and assigned unique active chair judges.
+> 3. Database verification confirmed 2 matches in `matches` and exactly 8 participants in `match_participants` (2 OG, 2 OO, 2 CG, 2 CO).
+> 4. Uncompleted round check verified: attempting to generate Round 2 while Round 1 ballots were unsubmitted returned HTTP 400 with `{"error":"Cannot generate round: Previous round has pending ballots"}`.
+> 5. Swiss Power-Pairing & Bench Equity verified: with Round 1 submitted, Round 2 correctly grouped top-point teams into Room 1 (pulling up top second-place teams) and lower-point teams into Room 2, assigning benches to eliminate duplicate bench positions.
+> 6. Cascade deletion verified: `DELETE /api/rounds/2` cleanly removed the round along with its cascading matches and participants.
+> 7. `GET /api/rounds` returns full nested round data including room matches, judges, and teams.
 
 ---
 

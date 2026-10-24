@@ -83,7 +83,7 @@ const JUDGES = [
   }
 ];
 
-async function seed() {
+async function seed({ closePool = false } = {}) {
   const client = await pool.connect();
   try {
     console.log('Seeding database with initial sample data...');
@@ -109,18 +109,24 @@ async function seed() {
 
     await client.query('COMMIT');
     console.log(`Successfully seeded ${TEAMS.length} teams and ${JUDGES.length} judges.`);
+    return { teams: TEAMS.length, judges: JUDGES.length };
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('Seeding failed:', err);
-    process.exitCode = 1;
+    if (closePool) {
+      process.exitCode = 1;
+    }
+    throw err;
   } finally {
     client.release();
-    await pool.end();
+    if (closePool) {
+      await pool.end();
+    }
   }
 }
 
 if (require.main === module) {
-  seed();
+  seed({ closePool: true }).catch(() => process.exit(1));
 }
 
 module.exports = seed;
