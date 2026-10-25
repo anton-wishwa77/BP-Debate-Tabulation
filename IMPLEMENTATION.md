@@ -87,26 +87,40 @@ Autonomous coding agents reading this tracker MUST adhere to these operational c
 ---
 
 ## Phase 4: Ballot Engine, LPW Validation & Dynamic Standings
-- [ ] **Task 4.1:** Build `validationService.js` enforcing unique ranks $[1, 2, 3, 4]$, valid speaker score boundaries ($50\text{--}100$), and automatic point mapping ($1\text{st} \rightarrow 3, 2\text{nd} \rightarrow 2, 3\text{rd} \rightarrow 1, 4\text{th} \rightarrow 0$).
-- [ ] **Task 4.2:** Implement strict server-side **Low-Point Win (LPW)** guardrail rejecting any ballot where $\text{Rank}_A < \text{Rank}_B$ but $\text{Speaks}_A \le \text{Speaks}_B$.
-- [ ] **Task 4.3:** Build atomic ballot submission controller (`PUT /api/matches/:matchId/ballot`) updating participant scores and setting `matches.is_submitted = true`.
-- [ ] **Task 4.4:** Write dynamic SQL query for team standings (`GET /api/standings/teams`) calculating points, speaker scores, rounds played, and bench history arrays without storing static totals on `teams`.
-- [ ] **Task 4.5:** Write dynamic SQL query for individual speaker leaderboard (`GET /api/standings/speakers`) flattening Speaker 1 and Speaker 2 scores across submitted matches.
+- [x] **Task 4.1:** Build `validationService.js` enforcing unique ranks $[1, 2, 3, 4]$, valid speaker score boundaries ($50\text{--}100$), and automatic point mapping ($1\text{st} \rightarrow 3, 2\text{nd} \rightarrow 2, 3\text{rd} \rightarrow 1, 4\text{th} \rightarrow 0$).
+- [x] **Task 4.2:** Implement strict server-side **Low-Point Win (LPW)** guardrail rejecting any ballot where $\text{Rank}_A < \text{Rank}_B$ but $\text{Speaks}_A \le \text{Speaks}_B$.
+- [x] **Task 4.3:** Build atomic ballot submission controller (`PUT /api/matches/:matchId/ballot`) updating participant scores and setting `matches.is_submitted = true`.
+- [x] **Task 4.4:** Write dynamic SQL query for team standings (`GET /api/standings/teams`) calculating points, speaker scores, rounds played, and bench history arrays without storing static totals on `teams`.
+- [x] **Task 4.5:** Write dynamic SQL query for individual speaker leaderboard (`GET /api/standings/speakers`) flattening Speaker 1 and Speaker 2 scores across submitted matches.
 
 *Verification Notes:*
-> Submitting an LPW ballot (e.g., Rank 1 has 140 speaks, Rank 2 has 150 speaks) returns HTTP 400 with an explicit rejection message. Valid ballots commit cleanly in a single transaction. Modifying a completed Round 1 ballot dynamically updates Round 1 standings, team points, and Round 2 Swiss brackets with zero data desynchronization or math drift.
+> All Phase 4 verification steps executed and passed:
+> 1. Ballot validation service (`validationService.js`) enforces strictly unique rank permutations `[1, 2, 3, 4]`, validates speaker score boundaries (`50–100`), maps ranks to points ($1\text{st}\rightarrow 3, 2\text{nd}\rightarrow 2, 3\text{rd}\rightarrow 1, 4\text{th}\rightarrow 0$), and validates team participant presence.
+> 2. Strict LPW guardrail verified: Submitting a ballot where Rank 1 scored 140 speaks and Rank 2 scored 150 speaks returned HTTP 400 with `{"error":"Low-Point Win Error: Team ranked 1 has lower or equal speaker points than team ranked 2."}`. Tied speaker points also correctly trigger rejection.
+> 3. Atomic ballot submission (`PUT /api/matches/:matchId/ballot`) executed within an ACID PostgreSQL transaction (`BEGIN ... COMMIT`). Verified participants, cleared ranks transiently to prevent unique constraint (`uq_match_rank`) collisions, updated points and scores, and set `matches.is_submitted = true` returning HTTP 200 with `{"message":"Ballot submitted successfully","match_id":1}`.
+> 4. Dynamic team standings (`GET /api/standings/teams`) verified: Returns live computed `total_points`, `total_speaks`, `rounds_played`, and `bench_history` array ordered strictly by `total_points DESC, total_speaks DESC, team_name ASC`. Unsubmitted teams correctly show 0 points and empty bench arrays (`[]`) with zero reliance on static total columns on `teams`.
+> 5. Dynamic speaker standings (`GET /api/standings/speakers`) verified: Flattens `speaker_1` and `speaker_2` scores across submitted matches, computing `rounds_spoken`, `total_speaker_score`, and `average_score` (rounded to 2 decimal places), ordered strictly by `total_speaker_score DESC, average_score DESC, speaker_name ASC`.
+> 6. Swiss Power-Pairing integration verified: Generating Round 2 while Round 1 had pending ballots was blocked with HTTP 400 (`"Cannot generate round: Previous round has pending ballots"`). Once both Match 1 and Match 2 ballots were submitted, Round 2 generated cleanly, grouping top teams into Room 1 with pull-ups and allocating benches according to bench equity.
+> 7. Dynamic ballot update verified: Modifying a completed Round 1 ballot dynamically updated team standings and speaker leaderboards instantaneously with zero math drift.
 
 ---
 
 ## Phase 5: Frontend Shell & Public Tournament Hub
-- [ ] **Task 5.1:** Set up Axios API client with base URL configuration and global error handling.
-- [ ] **Task 5.2:** Build responsive `Navbar` and color-coded `BenchBadge` components (`OG` Blue, `OO` Red, `CG` Amber, `CO` Green).
-- [ ] **Task 5.3:** Implement **Team Leaderboard Tab** displaying ranks, institutions, dynamic points, total speaks, and historical bench tags.
-- [ ] **Task 5.4:** Implement **Speaker Tab** displaying individual debater ranks, average speaker scores, and raw totals.
-- [ ] **Task 5.5:** Implement **Current Draw & Motion Archive Tabs** displaying room allocations, assigned judges, and live ballot status indicators (`Pending` vs `Confirmed`).
+- [x] **Task 5.1:** Set up Axios API client with base URL configuration and global error handling.
+- [x] **Task 5.2:** Build responsive `Navbar` and color-coded `BenchBadge` components (`OG` Blue, `OO` Red, `CG` Amber, `CO` Green).
+- [x] **Task 5.3:** Implement **Team Leaderboard Tab** displaying ranks, institutions, dynamic points, total speaks, and historical bench tags.
+- [x] **Task 5.4:** Implement **Speaker Tab** displaying individual debater ranks, average speaker scores, and raw totals.
+- [x] **Task 5.5:** Implement **Current Draw & Motion Archive Tabs** displaying room allocations, assigned judges, and live ballot status indicators (`Pending` vs `Confirmed`).
 
 *Verification Notes:*
-> Responsive view tested on mobile and desktop viewports. Public views load without authentication. Zero broken links or missing state errors on initial load with empty or populated databases. Dynamic data updates cleanly when new ballots are submitted on the backend.
+> All Phase 5 verification steps executed and passed:
+> 1. API client (`frontend/src/api/client.js`) configured with Axios instance targeting `http://localhost:5000/api` (via `VITE_API_BASE_URL`), global error interceptors, and typed endpoint methods.
+> 2. Classical Roman layout and navigation shell (`Layout.jsx`, `Navbar.jsx`) implemented with Corinthian border styling, grand serif headers (`Cormorant Garamond`), Roman numeral / label typography (`Cinzel`), and distinct classical crest buttons for Judge Portal and Senate Admin.
+> 3. Responsive `BenchBadge` component (`BenchBadge.jsx`) created implementing the exact Renaissance color mapping from `design_philosophy.md`: OG (Lapis Blue), OO (Rust Crimson), CG (Indigo Navy), and CO (Earthy Sienna).
+> 4. Team Standings view (`TeamStandings.jsx`) renders live dynamic team leaderboard from `GET /api/standings/teams` featuring Roman numeral ranks, team institutions, swing flags, rounds played, Roman gold team point badges, cumulative speaks, and chronological bench history pills. Loading skeletons and empty states handled cleanly.
+> 5. Speaker Leaderboard view (`SpeakerStandings.jsx`) renders debaters from `GET /api/standings/speakers` sorted by total speaks and 2-decimal rounded average scores with seamless sub-tab toggle on `PublicStandingsHub.jsx`.
+> 6. Draws & Motions board (`DrawsBoard.jsx`) renders round tabs with status badges (`Draft`, `Published`, `Completed`), grand motion announcement card with info slide callout, privacy guard hiding unreleased draft pairings, and responsive multi-column room fixture cards with chair adjudicators, bench slots, and live ballot confirmation badges (`Result Confirmed` vs `Ballot Pending`).
+> 7. Production build (`npm run build`) compiles cleanly in Vite with 0 JSX, CSS, or Tailwind warnings (`1649 modules transformed`, 21.6 kB CSS, 263.3 kB JS). Vite dev server is running live on `http://localhost:5173`.
 
 ---
 

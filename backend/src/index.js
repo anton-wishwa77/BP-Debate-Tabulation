@@ -6,6 +6,8 @@ const teamRoutes = require('./routes/teamRoutes');
 const judgeRoutes = require('./routes/judgeRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const roundRoutes = require('./routes/roundRoutes');
+const matchRoutes = require('./routes/matchRoutes');
+const standingsRoutes = require('./routes/standingsRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -18,6 +20,8 @@ app.use('/api/teams', teamRoutes);
 app.use('/api/judges', judgeRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/rounds', roundRoutes);
+app.use('/api/matches', matchRoutes);
+app.use('/api/standings', standingsRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
