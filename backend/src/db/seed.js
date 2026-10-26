@@ -2,83 +2,83 @@ const { pool } = require('./index');
 
 const TEAMS = [
   {
-    team_name: 'Oxford Union A',
-    institution: 'University of Oxford',
-    speaker_1_name: 'Julian Vance',
-    speaker_2_name: 'Eleanor Wright',
+    team_name: 'Ruhuna A',
+    institution: 'University of Ruhuna',
+    speaker_1_name: 'Wishwa Fernando',
+    speaker_2_name: 'Kavindu Sahan',
     is_swing: false
   },
   {
-    team_name: 'Cambridge Union A',
-    institution: 'University of Cambridge',
-    speaker_1_name: 'Arthur Pendelton',
-    speaker_2_name: 'Beatrice Thorne',
+    team_name: 'Moratuwa A',
+    institution: 'University of Moratuwa',
+    speaker_1_name: 'Chamara Silva',
+    speaker_2_name: 'Dinuka Perera',
     is_swing: false
   },
   {
-    team_name: 'Harvard Speech A',
-    institution: 'Harvard University',
-    speaker_1_name: 'Samuel Sterling',
-    speaker_2_name: 'Clara Montgomery',
+    team_name: 'Colombo A',
+    institution: 'University of Colombo',
+    speaker_1_name: 'Anuki Wijesinghe',
+    speaker_2_name: 'Senura Senanayake',
     is_swing: false
   },
   {
-    team_name: 'Yale Debate A',
-    institution: 'Yale University',
-    speaker_1_name: 'Lucas Davenport',
-    speaker_2_name: 'Genevieve Hayes',
+    team_name: 'Peradeniya A',
+    institution: 'University of Peradeniya',
+    speaker_1_name: 'Janith Bandara',
+    speaker_2_name: 'Nimesh Jayawardena',
     is_swing: false
   },
   {
-    team_name: 'LSE Debate Society A',
-    institution: 'London School of Economics',
-    speaker_1_name: 'Noah Al-Mansoor',
-    speaker_2_name: 'Sophia Laurent',
+    team_name: 'Law College A',
+    institution: 'Sri Lanka Law College',
+    speaker_1_name: 'Tariq Hamza',
+    speaker_2_name: 'Fathima Rizwan',
     is_swing: false
   },
   {
-    team_name: 'Sydney Union A',
-    institution: 'University of Sydney',
-    speaker_1_name: 'Lachlan Murdoch',
-    speaker_2_name: 'Matilda Higgins',
+    team_name: "J'pura A",
+    institution: 'University of Sri Jayewardenepura',
+    speaker_1_name: 'Oshada Senaratne',
+    speaker_2_name: 'Dulani Gunawardena',
     is_swing: false
   },
   {
-    team_name: 'Trinity Hist A',
-    institution: 'Trinity College Dublin',
-    speaker_1_name: "Ciaran O'Connor",
-    speaker_2_name: 'Maeve Gallagher',
+    team_name: 'Kelaniya A',
+    institution: 'University of Kelaniya',
+    speaker_1_name: 'Sachintha Rajapaksha',
+    speaker_2_name: 'Minoli Alwis',
     is_swing: false
   },
   {
-    team_name: 'Hart House A',
-    institution: 'University of Toronto',
-    speaker_1_name: 'Alexander Chen',
-    speaker_2_name: 'Olivia St. Claire',
+    team_name: 'KDU A',
+    institution: 'General Sir John Kotelawala Defence University',
+    speaker_1_name: 'Ravindu Wickramasinghe',
+    speaker_2_name: 'Devinda Dias',
     is_swing: false
   }
 ];
 
 const JUDGES = [
   {
-    judge_name: 'Dr. Alistair Finch',
-    institution: 'University of Oxford',
-    username: 'judge_finch',
+    judge_name: 'Dinesh Fernando',
+    institution: 'Faculty of Law, UoC',
+    username: 'dinesh_f',
     pin: '1234',
     is_active: true
   },
   {
-    judge_name: 'Elena Rostova',
-    institution: 'Harvard University',
-    username: 'judge_rostova',
-    pin: '5678',
+    judge_name: 'Sanjeewa Senanayake',
+    institution: 'Faculty of Engineering, Ruhuna',
+    username: 'sanjeewa_s',
+    pin: '4321',
     is_active: true
   },
   {
-    judge_name: 'Marcus Aurelius Vance',
-    institution: 'Trinity College Dublin',
-    username: 'judge_vance',
-    pin: '9012',
+    judge_name: 'Kavindi Herath',
+    institution: 'University of Moratuwa',
+    username: 'kavindi_h',
+    pin: '7890',
     is_active: true
   }
 ];
@@ -86,7 +86,7 @@ const JUDGES = [
 async function seed({ closePool = false } = {}) {
   const client = await pool.connect();
   try {
-    console.log('Seeding database with initial sample data...');
+    console.log('Seeding database with Sri Lankan university debate teams and adjudicators...');
     await client.query('BEGIN');
 
     await client.query('TRUNCATE TABLE teams, judges, rounds, matches, match_participants RESTART IDENTITY CASCADE;');
@@ -108,7 +108,7 @@ async function seed({ closePool = false } = {}) {
     }
 
     await client.query('COMMIT');
-    console.log(`Successfully seeded ${TEAMS.length} teams and ${JUDGES.length} judges.`);
+    console.log(`Successfully seeded ${TEAMS.length} Sri Lankan teams and ${JUDGES.length} chair judges.`);
     return { teams: TEAMS.length, judges: JUDGES.length };
   } catch (err) {
     await client.query('ROLLBACK');

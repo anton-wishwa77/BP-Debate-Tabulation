@@ -32,8 +32,13 @@ export const api = {
   getRounds: () => client.get('/rounds'),
   getRoundById: (roundId) => client.get(`/rounds/${roundId}`),
 
-  // Matches
+  // Matches & Ballots
   getMatchById: (matchId) => client.get(`/matches/${matchId}`),
+  submitBallot: (matchId, ballot) => client.put(`/matches/${matchId}/ballot`, ballot),
+
+  // Judge Authentication & Assigned Matches
+  loginJudge: (credentials) => client.post('/judges/login', credentials),
+  getJudgeMatches: (judgeId) => client.get(`/judges/${judgeId}/matches`),
 
   // Teams & Judges (read-only for public hub)
   getTeams: () => client.get('/teams'),

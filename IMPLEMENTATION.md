@@ -125,14 +125,21 @@ Autonomous coding agents reading this tracker MUST adhere to these operational c
 ---
 
 ## Phase 6: Adjudicator Portal & Interactive Digital Ballot
-- [ ] **Task 6.1:** Build lightweight judge authentication endpoint (`POST /api/judge/login`) and frontend login view using `username` and 4-digit `PIN`.
-- [ ] **Task 6.2:** Build `JudgePortal.jsx` fetching and scoping the active session strictly to the judge's currently assigned room.
-- [ ] **Task 6.3:** Build interactive 4-bench `BallotForm.jsx` showing the debate motion, room name, team names, and speaker input fields.
-- [ ] **Task 6.4:** Implement real-time client-side score calculator computing team speaker totals as numbers are typed.
-- [ ] **Task 6.5:** Implement real-time client-side LPW detector displaying immediate visual warnings and disabling the submit button until all scoring constraints pass.
+- [x] **Task 6.1:** Build lightweight judge authentication endpoint (`POST /api/judge/login`) and frontend login view using `username` and 4-digit `PIN`.
+- [x] **Task 6.2:** Build `JudgePortal.jsx` fetching and scoping the active session strictly to the judge's currently assigned room.
+- [x] **Task 6.3:** Build interactive 4-bench `BallotForm.jsx` showing the debate motion, room name, team names, and speaker input fields.
+- [x] **Task 6.4:** Implement real-time client-side score calculator computing team speaker totals as numbers are typed.
+- [x] **Task 6.5:** Implement real-time client-side LPW detector displaying immediate visual warnings and disabling the submit button until all scoring constraints pass.
 
 *Verification Notes:*
-> Invalid credentials return an authentication error. Logged-in judge only sees their assigned room for the active round. Entering duplicate ranks or an LPW immediately flags the UI with high-contrast red warning banners and disables the submit button. Successful submission transitions UI to a confirmed result state with live update reflected in the database.
+> All Phase 6 verification steps executed and passed:
+> 1. Sri Lankan university debating circuit seed migration verified: `POST /api/admin/reset` followed by `POST /api/admin/seed` cleanly seeded 8 authentic Sri Lankan university teams (Ruhuna A, Moratuwa A, Colombo A, Peradeniya A, Law College A, J'pura A, Kelaniya A, KDU A) with authentic debater names, plus 3 active chair judges (Dinesh Fernando, Sanjeewa Senanayake, Kavindi Herath).
+> 2. Judge PIN authentication verified: `POST /api/judges/login` returned HTTP 401 with `{"error":"Invalid credentials or inactive adjudicator status"}` for invalid PIN (`dinesh_f` / `0000`), and HTTP 200 with judge profile for valid credentials (`dinesh_f` / `1234`).
+> 3. Judge session scoping verified: `GET /api/judges/:judgeId/matches` returns only fixtures assigned to that adjudicator, mapped with debate motion, round number, and 4 participating benches (`OG`, `OO`, `CG`, `CO`).
+> 4. Interactive E-Ballot form (`BallotForm.jsx`) features 4-bench card layout with color-coded `BenchBadge` components, rank selector (1st–4th) with automatic team points mapping ($1\text{st}\rightarrow 3, 2\text{nd}\rightarrow 2, 3\text{rd}\rightarrow 1, 4\text{th}\rightarrow 0$), and debater score inputs (range 50–100) with dynamic live sum.
+> 5. Real-time client-side Low-Point Win (LPW) detector and rank uniqueness validator verified: Entering duplicate ranks or giving a higher-ranked team fewer or equal speaks than a lower-ranked team immediately triggers the Classical warning banner (*"Senate Adjudication Warning: Low-Point Win detected..."*) and disables the submit button. Monotonic valid scores clear the alert.
+> 6. Atomic ballot submission and sealed state verified: Submitting valid scores commits via `PUT /api/matches/:matchId/ballot` returning HTTP 200 (`{"message":"Ballot submitted successfully","match_id":1}`), locks the form into a decree confirmed state with the Classical seal graphic, and dynamically updates live team standings and speaker leaderboards on the Public Hub.
+> 7. Production build (`npm run build`) compiled cleanly in Vite with 0 JSX, CSS, or Tailwind warnings in 2.90s.
 
 ---
 

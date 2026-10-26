@@ -18,6 +18,7 @@ app.use(express.json());
 // Routes
 app.use('/api/teams', teamRoutes);
 app.use('/api/judges', judgeRoutes);
+app.use('/api/judge', judgeRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/rounds', roundRoutes);
 app.use('/api/matches', matchRoutes);
