@@ -35,6 +35,8 @@ export const api = {
   // Matches & Ballots
   getMatchById: (matchId) => client.get(`/matches/${matchId}`),
   submitBallot: (matchId, ballot) => client.put(`/matches/${matchId}/ballot`, ballot),
+  reassignMatchJudge: (matchId, judgeId) =>
+    client.patch(`/matches/${matchId}/adjudicator`, { judge_id: judgeId }),
 
   // Judge Authentication & Assigned Matches
   loginJudge: (credentials) => client.post('/judges/login', credentials),

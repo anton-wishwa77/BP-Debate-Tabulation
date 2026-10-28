@@ -457,6 +457,8 @@ export default function AdminDashboard() {
           rounds={rounds}
           selectedRoundNumber={selectedRoundNumber}
           onSelectRound={setSelectedRoundNumber}
+          judges={judges}
+          onRefresh={loadData}
         />
       )}
 

@@ -178,11 +178,7 @@ export default function BallotForm() {
               lowerBench: lowerTeam.bench_position,
               higherSpeaks,
               lowerSpeaks,
-              message: `Senate Adjudication Warning: Low-Point Win detected. Team ranked ${formatOrdinal(
-                higherTeam.rank
-              )} (${higherTeam.bench_position}, ${higherSpeaks} speaks) has equal or fewer speaker points than team ranked ${formatOrdinal(
-                lowerTeam.rank
-              )} (${lowerTeam.bench_position}, ${lowerSpeaks} speaks). Debates cannot be awarded on lower speaker points.`,
+              message: `Senate Adjudication Warning: A higher ranked team cannot hold equal or fewer speaker points than a lower ranked team.`,
             });
           }
         }
@@ -372,13 +368,13 @@ export default function BallotForm() {
         </div>
       )}
 
-      {/* Real-time LPW Prohibition Warnings */}
+      {/* Real-time Adjudication Standards Warnings */}
       {validation.lpwErrors.length > 0 && (
         <div className="rounded-xl bg-[#FDF3E7] border-2 border-[#E59866] p-5 shadow-xs space-y-2">
           <div className="flex items-center gap-2 text-[#A04000]">
             <ShieldAlert className="w-5 h-5 shrink-0" />
             <h4 className="font-roman text-xs tracking-wider uppercase font-bold">
-              Senate Adjudication Warning • Low-Point Win Prohibition
+              Senate Adjudication Warning • Parliamentary Adjudication Standards
             </h4>
           </div>
           <div className="space-y-1.5 pl-7">
@@ -528,7 +524,7 @@ export default function BallotForm() {
                 Seal Official Room Ballot
               </h4>
               <p className="font-sans text-xs text-ink-600">
-                All scoring constraints, rank permutations, and Low-Point Win checks must pass before submission.
+                All scoring constraints, rank permutations, and adjudication standards must pass before submission.
               </p>
             </div>
 

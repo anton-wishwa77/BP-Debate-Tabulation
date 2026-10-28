@@ -17,13 +17,13 @@ export default function JudgePortalPlaceholder() {
           Adjudicator Portal &amp; E-Ballot
         </h1>
         <p className="font-sans text-sm text-ink-600 max-w-md mx-auto">
-          Adjudicator PIN login, room-scoped ballot entry, and real-time Low-Point Win mathematical validators will be active in Phase 6.
+          Adjudicator PIN login, room-scoped ballot entry, and real-time parliamentary adjudication validators will be active in Phase 6.
         </p>
       </div>
 
       <div className="p-6 rounded-xl bg-canvas-parchment border border-gold-light/60 shadow-xs max-w-md mx-auto">
         <p className="font-serif italic text-ink-800 text-sm">
-          "The chairs shall deliberate in solemn assembly, scoring speech and strategy without concession to low-point triumphs."
+          "The chairs shall deliberate in solemn assembly, scoring speech and strategy in fidelity to authentic parliamentary convention."
         </p>
       </div>
 

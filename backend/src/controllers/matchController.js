@@ -165,7 +165,103 @@ async function submitBallot(req, res, next) {
   }
 }
 
+/**
+ * PATCH /api/matches/:id/adjudicator
+ * Payload: { judge_id: number | null }
+ * Reassign, allocate, or vacate chair adjudicator for a match
+ */
+async function reassignAdjudicator(req, res, next) {
+  try {
+    const matchId = parseInt(req.params.id || req.params.matchId, 10);
+    if (isNaN(matchId) || matchId <= 0) {
+      return res.status(400).json({ error: 'Invalid match ID' });
+    }
+
+    // 1. Verify match existence
+    const matchRes = await query(
+      'SELECT match_id, round_id, room_name, judge_id, is_submitted FROM matches WHERE match_id = $1',
+      [matchId]
+    );
+
+    if (matchRes.rows.length === 0) {
+      return res.status(404).json({ error: 'Match not found' });
+    }
+
+    const match = matchRes.rows[0];
+
+    // 2. Ballot Lockout Guard
+    if (match.is_submitted) {
+      return res.status(400).json({
+        error: 'Cannot reassign adjudicator: Official ballot has already been sealed for this chamber'
+      });
+    }
+
+    const { judge_id } = req.body;
+
+    // 3. Vacating Chair (judge_id === null or empty string or undefined)
+    if (judge_id === null || judge_id === '' || judge_id === undefined) {
+      await query('UPDATE matches SET judge_id = NULL WHERE match_id = $1', [matchId]);
+      return res.status(200).json({
+        message: 'Chamber adjudicator chair vacated successfully',
+        match_id: matchId,
+        judge: null
+      });
+    }
+
+    const targetJudgeId = parseInt(judge_id, 10);
+    if (isNaN(targetJudgeId) || targetJudgeId <= 0) {
+      return res.status(400).json({ error: 'Invalid judge ID provided' });
+    }
+
+    // 4. Verify judge exists and is active
+    const judgeRes = await query(
+      'SELECT judge_id, judge_name, institution, is_active FROM judges WHERE judge_id = $1',
+      [targetJudgeId]
+    );
+
+    if (judgeRes.rows.length === 0) {
+      return res.status(404).json({ error: 'Judge not found' });
+    }
+
+    const judge = judgeRes.rows[0];
+    if (!judge.is_active) {
+      return res.status(400).json({ error: 'Cannot assign inactive adjudicator' });
+    }
+
+    // 5. Double-Booking Check in the same round
+    const conflictRes = await query(
+      `SELECT match_id, room_name FROM matches 
+       WHERE round_id = $1 AND judge_id = $2 AND match_id != $3`,
+      [match.round_id, targetJudgeId, matchId]
+    );
+
+    if (conflictRes.rows.length > 0) {
+      const conflictRoom = conflictRes.rows[0].room_name;
+      return res.status(409).json({
+        error: `Conflict: ${judge.judge_name} is already presiding over ${conflictRoom} in this round.`
+      });
+    }
+
+    // 6. Update match
+    await query('UPDATE matches SET judge_id = $1 WHERE match_id = $2', [targetJudgeId, matchId]);
+
+    return res.status(200).json({
+      message: 'Adjudicator allocated successfully',
+      match_id: matchId,
+      judge: {
+        id: judge.judge_id,
+        judge_id: judge.judge_id,
+        judge_name: judge.judge_name,
+        institution: judge.institution
+      }
+    });
+  } catch (err) {
+    return next(err);
+  }
+}
+
 module.exports = {
   getMatchById,
-  submitBallot
+  submitBallot,
+  reassignAdjudicator
 };

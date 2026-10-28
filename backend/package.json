@@ -9,6 +9,7 @@
     "db:migrate": "node src/db/migrate.js",
     "db:seed": "node src/db/seed.js",
     "db:reset": "node src/db/reset.js",
+    "seed:tournament": "node src/scripts/seedTournamentRounds.js",
     "simulate": "node src/scripts/simulateTournament.js"
   },
   "keywords": [

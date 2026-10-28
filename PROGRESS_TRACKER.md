@@ -282,4 +282,74 @@ Autonomous coding agents reading this tracker MUST adhere to these operational c
   - Verified production build (`npm run build`) passed with exit code 0 (1658 modules transformed).
   - **STRICT GIT LOCKOUT:** Zero git commands executed; all files left unstaged for manual review.
 
+---
+
+## Phase 13: Parliamentary Terminology & UI Copy Sanitization
+- [x] **Task 13.1:** Standings Header & Empty State Copy Sanitization:
+  - Updated `PublicStandingsHub.jsx` header subtitle:
+    - Replaced `"Deliberations and standings computed dynamically under British Parliamentary rules with strict Low-Point Win prohibitions."` with `"Deliberations and standings computed dynamically under official British Parliamentary adjudication standards."`
+  - Updated `TeamStandings.jsx` empty state copy:
+    - Replaced `"Standings will dynamically calculate here as soon as chairs submit validated ballots without Low-Point Wins."` with `"Standings will dynamically calculate here as soon as chairs submit validated ballots adhering to official adjudication standards."`
+- [x] **Task 13.2:** System Tagline & Footer Copy Sanitization:
+  - Updated `Layout.jsx` classical footer tagline:
+    - Replaced `"British Parliamentary Tabulation Engine adhering to strict Rule of 4 &amp; LPW prohibitions."` with `"British Parliamentary Tabulation Engine adhering to official WUDC rules and 4-bench chamber structures."`
+- [x] **Task 13.3:** Adjudication & Warning Banner Copy Sanitization:
+  - Rephrased `BallotForm.jsx` real-time warning message cleanly to: `"Senate Adjudication Warning: A higher ranked team cannot hold equal or fewer speaker points than a lower ranked team."`
+  - Updated `BallotForm.jsx` warning card header to `"Senate Adjudication Warning • Parliamentary Adjudication Standards"` and submit barrier copy to `"All scoring constraints, rank permutations, and adjudication standards must pass before submission."`
+  - Updated `RoomMatrix.jsx` submission verification label to `"Official British Parliamentary adjudication standards verified at submission."`
+  - Sanitized placeholder text in `JudgePortalPlaceholder.jsx` to authentic parliamentary convention copy.
+- [x] **Task 13.4:** Mathematical Logic & Validation Integrity Preservation:
+  - Preserved 100% of underlying mathematical validation logic, rank checks, score boundary enforcements, and ballot guardrails across backend and frontend.
+  - Verified with automated node validation tests confirming rejection of ballots violating speaker point hierarchy while approving valid monotonic ballots.
+  - Production build (`npm --prefix frontend run build`) passed with exit code 0 (1658 modules transformed).
+  - **STRICT GIT LOCKOUT:** Zero git commands executed; all modified files left unstaged in workspace for manual inspection.
+
+---
+
+## Phase 14: Authentic Tournament Rounds & Match History Seeder
+- [x] **Task 14.1:** Tournament Seeder Script (`backend/src/scripts/seedTournamentRounds.js`):
+  - Created standalone seeder script establishing 3 authentic rounds of British Parliamentary debate across 8 Sri Lankan universities and 3 chair adjudicators:
+    - **Round 1 (Completed):** Motion on higher education mobility; sealed ballots across Chamber of Cicero (`dinesh_f`) and Chamber of Seneca (`sanjeewa_s`).
+    - **Round 2 (Completed):** Motion on autonomous lethal weapons; power-paired top bracket (`kavindi_h`) and bottom bracket (`dinesh_f`) with sealed ballots.
+    - **Round 3 (Published):** Motion on central bank digital currencies (CBDCs); published chamber allocations for live adjudication (Chamber of Cicero: `sanjeewa_s`, Chamber of Seneca: `kavindi_h`).
+- [x] **Task 14.2:** Tournament Integrity & LPW Invariant Enforcement:
+  - Enforced 4-bench chamber rule (`OG`, `OO`, `CG`, `CO`) across every room.
+  - Strictly mapped ranks to BP points ($1\text{st} \rightarrow 3, 2\text{nd} \rightarrow 2, 3\text{rd} \rightarrow 1, 4\text{th} \rightarrow 0$).
+  - Calibrated speaker marks to realistic WUDC ranges ($73\text{--}82$) guaranteeing strictly monotonic speaks with respect to rank.
+- [x] **Task 14.3:** Package Script Integration & Database Execution:
+  - Added `"seed:tournament": "node src/scripts/seedTournamentRounds.js"` to `backend/package.json`.
+  - Executed script cleanly populating database records across `rounds`, `matches`, and `match_participants`.
+- [x] **Task 14.4:** Backend & Leaderboard Verification:
+  - `GET /api/rounds`: Confirmed 3 rounds returned with correct statuses (`Completed`, `Completed`, `Published`).
+  - `GET /api/standings/teams`: Verified realistic dynamic standings: Law College A (6 pts, 321 speaks), Colombo A (5 pts, 316 speaks), Moratuwa A (4 pts, 309 speaks), Ruhuna A (3 pts, 308 speaks), Peradeniya A (3 pts, 301 speaks), J'pura A (2 pts, 303 speaks), Kelaniya A (1 pt, 296 speaks), KDU A (0 pts, 292 speaks).
+  - `GET /api/standings/speakers`: Verified individual speaker tab led by Tariq Hamza (161 pts, 80.5 avg) and Fathima Rizwan (160 pts, 80.0 avg).
+  - Adjudicator Authentication: Verified login and dashboard for `sanjeewa_s` (PIN `4321`) with assigned Round 3 match ready for live balloting.
+  - **STRICT GIT LOCKOUT:** Zero git commands executed; all modified and newly created files left unstaged for manual review.
+
+---
+
+## Phase 15: Chamber Adjudicator Allocation & Double-Booking Protection Suite
+- [x] **Task 15.1:** Backend Allocation & Conflict Prevention API (`PATCH /api/matches/:id/adjudicator`):
+  - Implemented `reassignAdjudicator` in `backend/src/controllers/matchController.js` and registered in `matchRoutes.js`.
+  - Supports vacating chairs (`judge_id: null`), allocating active judges, and swapping adjudicators.
+  - Enforced Ballot Lockout Guard: Rejects reassignments on sealed ballots (`is_submitted = true`) with `400 Bad Request` (`"Cannot reassign adjudicator: Official ballot has already been sealed for this chamber"`).
+  - Enforced Double-Booking Check: Rejects adjudicator double-booking within the same round with `409 Conflict` (`"Conflict: [Judge Name] is already presiding over [Room Name] in this round."`).
+- [x] **Task 15.2:** Frontend Adjudicator Allocation Modal (`ReassignJudgeModal.jsx`):
+  - Created Renaissance modal in `frontend/src/components/admin/ReassignJudgeModal.jsx` styled with warm parchment background, antique gold borders, and golden hairline accents.
+  - Displays chamber details (Chamber Name, Round number, Current Chair) and full judge selector.
+  - Disables conflicted adjudicators with explicit tag: `"[Judge Name] (Assigned: [Room Name])"`.
+  - Handles `Escape` key, backdrop dismissal, inline 409 conflict alerts, and clean submission state.
+- [x] **Task 15.3:** Senate Admin Integration (`RoomMatrix.jsx` & `AdminDashboard.jsx`):
+  - Updated room cards in `RoomMatrix.jsx` to render current judge or *"Unassigned Chair"* parchment badge.
+  - Added classical **Amend Chair** action button (`<Gavel />`).
+  - Added sealed wax lock indicator (`<Lock />` / *"Chair Finalized"*) disabling reassignment on sealed matches.
+  - Immediate local state updates on allocation or vacating with classical toast notification (*"Adjudicator allocation sealed for [Room Name]."*).
+- [x] **Task 15.4:** Verification & Integration Testing:
+  - Verified terminal tests: vacating chair returns 200 OK, assigning judge returns 200 OK, assigning conflicted judge returns 409 Conflict, and assigning to sealed match returns 400 Bad Request.
+  - Production build (`npm --prefix frontend run build`) passed with exit code 0 (1659 modules transformed).
+  - **STRICT GIT LOCKOUT:** Zero git commands executed; all modified and newly created files left unstaged for manual review.
+
+
+
+
 

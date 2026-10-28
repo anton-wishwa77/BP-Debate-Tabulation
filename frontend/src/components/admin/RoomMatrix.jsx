@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import BenchBadge from '../common/BenchBadge';
 import TeamDossierModal from '../common/TeamDossierModal';
+import ReassignJudgeModal from './ReassignJudgeModal';
 import {
   Scale,
   Clock,
   CheckCircle2,
+  CheckCircle,
   ExternalLink,
   Award,
   Layers,
@@ -13,7 +15,9 @@ import {
   FileText,
   X,
   Eye,
-  ShieldCheck
+  ShieldCheck,
+  Gavel,
+  Lock
 } from 'lucide-react';
 
 function toRoman(num) {
@@ -35,11 +39,31 @@ function toRoman(num) {
 
 const BENCH_ORDER = ['OG', 'OO', 'CG', 'CO'];
 
-export default function RoomMatrix({ rounds, selectedRoundNumber, onSelectRound }) {
+export default function RoomMatrix({
+  rounds,
+  selectedRoundNumber,
+  onSelectRound,
+  judges = [],
+  onRefresh
+}) {
+  const [localRounds, setLocalRounds] = useState(rounds || []);
   const [inspectMatch, setInspectMatch] = useState(null);
   const [selectedTeamId, setSelectedTeamId] = useState(null);
+  const [reassignMatch, setReassignMatch] = useState(null);
+  const [toastMessage, setToastMessage] = useState(null);
 
-  if (!rounds || rounds.length === 0) {
+  useEffect(() => {
+    setLocalRounds(rounds || []);
+  }, [rounds]);
+
+  useEffect(() => {
+    if (toastMessage) {
+      const timer = setTimeout(() => setToastMessage(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [toastMessage]);
+
+  if (!localRounds || localRounds.length === 0) {
     return (
       <div className="rounded-xl bg-canvas-parchment border border-sky-blue/50 p-12 text-center max-w-md mx-auto shadow-xs">
         <Layers className="w-10 h-10 text-gold-deep/60 mx-auto mb-3" />
@@ -53,14 +77,46 @@ export default function RoomMatrix({ rounds, selectedRoundNumber, onSelectRound 
 
   // Active round resolution
   const activeRound =
-    rounds.find((r) => r.round_number === selectedRoundNumber) ||
-    rounds[rounds.length - 1];
+    localRounds.find((r) => r.round_number === selectedRoundNumber) ||
+    localRounds[localRounds.length - 1];
 
   const matches = activeRound?.matches || [];
   const sealedCount = matches.filter((m) => m.is_submitted).length;
   const totalMatches = matches.length;
   const completionPercentage =
     totalMatches > 0 ? Math.round((sealedCount / totalMatches) * 100) : 0;
+
+  const handleJudgeAllocated = (matchId, newJudge) => {
+    setLocalRounds((prevRounds) =>
+      prevRounds.map((r) => ({
+        ...r,
+        matches: (r.matches || []).map((m) =>
+          m.match_id === matchId
+            ? {
+                ...m,
+                judge_id: newJudge ? (newJudge.judge_id || newJudge.id) : null,
+                judge: newJudge
+                  ? {
+                      judge_id: newJudge.judge_id || newJudge.id,
+                      judge_name: newJudge.judge_name,
+                      institution: newJudge.institution,
+                      is_active: newJudge.is_active ?? true
+                    }
+                  : null
+              }
+            : m
+        )
+      }))
+    );
+
+    if (reassignMatch) {
+      setToastMessage(`Adjudicator allocation sealed for ${reassignMatch.room_name}.`);
+    }
+
+    if (onRefresh) {
+      onRefresh();
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -170,19 +226,50 @@ export default function RoomMatrix({ rounds, selectedRoundNumber, onSelectRound 
                   )}
                 </div>
 
-                {/* Chair Adjudicator Info */}
-                <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-sky-light/30 border border-sky-blue/40 font-sans text-xs">
-                  <Scale className="w-4 h-4 text-gold-deep shrink-0" />
-                  <div className="flex-1 truncate">
-                    <span className="font-semibold text-ink-900">
-                      {match.judge?.judge_name || 'Unassigned Chair'}
-                    </span>
-                    {match.judge?.institution && (
-                      <span className="text-ink-600 text-[11px] block truncate">
-                        {match.judge.institution}
-                      </span>
-                    )}
+                {/* Chair Adjudicator Info & Allocation Control */}
+                <div className="flex items-center justify-between gap-2.5 px-3 py-2 rounded-lg bg-sky-light/30 border border-sky-blue/40 font-sans text-xs">
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    <Scale className="w-4 h-4 text-gold-deep shrink-0" />
+                    <div className="truncate">
+                      {match.judge?.judge_name ? (
+                        <>
+                          <span className="font-semibold text-ink-900 block truncate">
+                            {match.judge.judge_name}
+                          </span>
+                          {match.judge.institution && (
+                            <span className="text-ink-600 text-[11px] block truncate">
+                              {match.judge.institution}
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-50 border border-amber-300 text-amber-800 text-[11px] font-roman uppercase tracking-wider font-bold">
+                          Unassigned Chair
+                        </span>
+                      )}
+                    </div>
                   </div>
+
+                  {/* Reassign / Amend Action */}
+                  {isSealed ? (
+                    <span
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded font-roman text-[10px] tracking-wider uppercase font-bold text-ink-400 bg-sky-light/20 border border-sky-blue/30 cursor-not-allowed shrink-0"
+                      title="Chair allocation locked: Official ballot has been sealed"
+                    >
+                      <Lock className="w-3 h-3 text-gold-deep/60" />
+                      <span>Chair Finalized</span>
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setReassignMatch(match)}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded font-roman text-[11px] tracking-wider uppercase font-bold text-ink-800 bg-canvas-parchment hover:bg-sky-light/60 border border-sky-blue/60 hover:border-gold-deep shadow-2xs transition-all duration-200 shrink-0 cursor-pointer"
+                      title={`Amend chair adjudicator for ${match.room_name}`}
+                    >
+                      <Gavel className="w-3.5 h-3.5 text-gold-deep" />
+                      <span>Amend Chair</span>
+                    </button>
+                  )}
                 </div>
 
                 {/* The 4 Benches */}
@@ -345,7 +432,7 @@ export default function RoomMatrix({ rounds, selectedRoundNumber, onSelectRound 
 
             <div className="pt-2 flex items-center justify-between">
               <span className="font-sans text-[11px] text-ink-600">
-                Low-Point Win (LPW) guardrail verified at submission.
+                Official British Parliamentary adjudication standards verified at submission.
               </span>
               <div className="flex items-center gap-3">
                 <Link
@@ -373,6 +460,37 @@ export default function RoomMatrix({ rounds, selectedRoundNumber, onSelectRound 
         isOpen={Boolean(selectedTeamId)}
         onClose={() => setSelectedTeamId(null)}
       />
+
+      {/* Renaissance Reassign Adjudicator Modal */}
+      <ReassignJudgeModal
+        isOpen={Boolean(reassignMatch)}
+        match={reassignMatch}
+        roundNumber={activeRound?.round_number}
+        roundMatches={matches}
+        judges={judges}
+        onClose={() => setReassignMatch(null)}
+        onSuccess={handleJudgeAllocated}
+      />
+
+      {/* Classical Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-xl bg-canvas-parchment border-2 border-gold-deep text-ink-900 shadow-2xl animate-in slide-in-from-bottom-5 duration-200 ring-1 ring-gold-light/40">
+          <div className="w-7 h-7 rounded-full bg-gold-deep/15 border border-gold-deep/40 flex items-center justify-center text-gold-deep shrink-0">
+            <CheckCircle className="w-4 h-4" />
+          </div>
+          <span className="font-roman text-xs tracking-wider uppercase font-bold">
+            {toastMessage}
+          </span>
+          <button
+            type="button"
+            onClick={() => setToastMessage(null)}
+            className="text-ink-400 hover:text-ink-900 ml-2"
+            aria-label="Dismiss Notification"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -17,7 +17,7 @@ export default function PublicStandingsHub() {
           Tournament Standings
         </h1>
         <p className="font-sans text-sm sm:text-base text-ink-600 max-w-xl mx-auto">
-          Deliberations and standings computed dynamically under British Parliamentary rules with strict Low-Point Win prohibitions.
+          Deliberations and standings computed dynamically under official British Parliamentary adjudication standards.
         </p>
       </div>
 

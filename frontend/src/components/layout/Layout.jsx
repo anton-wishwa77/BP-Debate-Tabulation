@@ -21,7 +21,7 @@ export default function Layout({ children }) {
           </div>
 
           <p className="font-sans text-xs text-ink-600">
-            British Parliamentary Tabulation Engine adhering to strict Rule of 4 &amp; LPW prohibitions.
+            British Parliamentary Tabulation Engine adhering to official WUDC rules and 4-bench chamber structures.
           </p>
         </div>
       </footer>

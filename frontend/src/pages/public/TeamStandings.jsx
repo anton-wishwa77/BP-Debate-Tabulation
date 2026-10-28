@@ -156,7 +156,7 @@ export default function TeamStandings() {
                         The Senate has not yet recorded any completed matches.
                       </h3>
                       <p className="font-sans text-xs text-ink-600">
-                        Standings will dynamically calculate here as soon as chairs submit validated ballots without Low-Point Wins.
+                        Standings will dynamically calculate here as soon as chairs submit validated ballots adhering to official adjudication standards.
                       </p>
                     </div>
                   </td>
