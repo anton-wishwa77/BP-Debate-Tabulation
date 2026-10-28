@@ -1,0 +1,16 @@
+{
+  "name": "bp-debate-tabulation-system",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Forum Aeterna - British Parliamentary Debate Tabulation System",
+  "scripts": {
+    "dev": "npx concurrently -n \"BACKEND,FRONTEND\" -c \"cyan,magenta\" \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\""
+  },
+  "keywords": [
+    "debate",
+    "british-parliamentary",
+    "tabulation"
+  ],
+  "author": "",
+  "license": "ISC"
+}

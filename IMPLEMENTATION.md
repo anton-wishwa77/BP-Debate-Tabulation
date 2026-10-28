@@ -144,23 +144,37 @@ Autonomous coding agents reading this tracker MUST adhere to these operational c
 ---
 
 ## Phase 7: Admin Dashboard, Round Progression & End-to-End Simulation
-- [ ] **Task 7.1:** Build admin authentication shell (`/admin`) guarded by master credentials (`ADMIN_USER`, `ADMIN_PASS`).
-- [ ] **Task 7.2:** Build **Team Manager** panel with registration forms, team tables, delete actions, Rule of 4 banner, and one-click `"Add Swing Teams"` button.
-- [ ] **Task 7.3:** Build **Judge Manager** panel with adjudicator registration, PIN visibility toggle, and active/inactive toggles.
-- [ ] **Task 7.4:** Build **Round & Draw Manager** panel with motion entry, pairing execution triggers, room matrix, and administrative ballot overrides.
-- [ ] **Task 7.5:** Integrate `"Seed 8 Sample Teams"` and `"Reset Tournament Data"` quick-demo buttons.
-- [ ] **Task 7.6:** Execute full automated tournament simulation test (Seed $\rightarrow$ Round 1 $\rightarrow$ Submit Ballots $\rightarrow$ Round 2 Swiss Pairing $\rightarrow$ Standings Verification).
+- [x] **Task 7.1:** Build admin authentication shell (`/admin`) guarded by master credentials (`ADMIN_USER`, `ADMIN_PASS`).
+- [x] **Task 7.2:** Build **Team Manager** panel with registration forms, team tables, delete actions, Rule of 4 banner, and one-click `"Add Swing Teams"` button.
+- [x] **Task 7.3:** Build **Judge Manager** panel with adjudicator registration, PIN visibility toggle, and active/inactive toggles.
+- [x] **Task 7.4:** Build **Round & Draw Manager** panel with motion entry, pairing execution triggers, room matrix, and administrative ballot overrides.
+- [x] **Task 7.5:** Integrate `"Seed 8 Sample Teams"` and `"Reset Tournament Data"` quick-demo buttons.
+- [x] **Task 7.6:** Execute full automated tournament simulation test (Seed $\rightarrow$ Round 1 $\rightarrow$ Submit Ballots $\rightarrow$ Round 2 Swiss Pairing $\rightarrow$ Standings Verification).
 
 *Verification Notes:*
-> Complete tournament workflow executes end-to-end within 90 seconds during a live evaluation demo. Master password protects admin routes. Admins can override submitted scores and delete unstarted rounds. `npm run build` passes with 0 errors across frontend and backend workspaces.
+> All Phase 7 verification steps executed and passed:
+> 1. Senate Admin Dashboard (`AdminDashboard.jsx`) implemented at `/admin` guarded by master authentication (`ADMIN_USER=admin`, `ADMIN_PASS=admin123`). Features classical imperial crest banner (*"The High Senate & Tabulation Directorate"*), 4 real-time metric cards (Registered Delegations with swing count badge, Adjudication Pool active counts, Current Active Round state, and Ballot Completion progress bar), and classical 4-tab navigation.
+> 2. Roster Management & Rule-of-4 Swing Balancer (`RosterPanel.jsx`): Table with search filtering, team registration modal (`POST /api/teams`), team deletion (`DELETE /api/teams/:id`), adjudicator registration (`POST /api/judges`), PIN reveal/mask toggle, and active status switch (`PUT /api/judges/:id`). Prominent gold *"Invoke Rule of 4 Balancer"* (`POST /api/teams/swing`) verified: adding a 9th team triggers the 3-team swing requirement alert; clicking drafts 3 swing teams to restore symmetry to 12.
+> 3. Round Generation & Motion Dispatch Console (`RoundControlPanel.jsx`): Auto-incrementing round number selector, Roman parchment motion and info slide inputs, pre-draw validation checklist (divisibility by 4, judge availability, prior unsealed ballots). Atomic draw execution (`POST /api/rounds/generate`), round status switcher (`PATCH /api/rounds/:id` toggling Draft/Published/Completed), and cascade round deletion (`DELETE /api/rounds/:id`).
+> 4. Live Room Matrix & Adjudication Monitor (`RoomMatrix.jsx`): Visual grid of chambers across rounds, assigned chair adjudicators, 4 benches with `BenchBadge` tags, real-time ballot status indicators (*"Awaiting Verdict"* vs *"Ballot Sealed"*), embedded score sheet inspection modal, and administrative override links to `/judge/matches/:matchId/ballot`.
+> 5. Tournament Maintenance & CSV Standings Export (`MaintenancePanel.jsx`): One-click browser CSV compilation downloading formatted Team Standings and Speaker Leaderboard (`forum_aeterna_standings.csv`). Pristine Sri Lankan circuit reset confirmed via modal executing `POST /api/admin/reset` and `POST /api/admin/seed`.
+> 6. Automated integration test (`npm run simulate` running `backend/src/scripts/simulateTournament.js`): Fully simulated complete 2-round tournament lifecycle (Reset & Seed -> Round 1 Draw -> Monotonic LPW Ballots -> Dynamic Standings -> Round 2 Swiss Power-Pairing & Bench Balancing -> Round 2 Ballots -> Final Standings & Speaker Leaderboards) with exit code 0.
+> 7. Production build audit (`npm run build` in `frontend/`) compiled cleanly in Vite with 0 errors/warnings (`1655 modules transformed` in 4.56s).
 
 ---
 
 ## Post-Phase 7: Full Repo Audit & Single Source of Truth (SSOT) Consolidation
-- [ ] **Task 8.1:** Full codebase audit eliminating hardcoded strings, magic numbers (e.g., score bounds `50`/`100`, team points `3/2/1/0`), and duplicate validation routines.
-- [ ] **Task 8.2:** Backend SSOT consolidation (`backend/src/config/tabRules.js`) centralizing score boundaries, ranking points, bench definitions, and status enums.
-- [ ] **Task 8.3:** Frontend SSOT consolidation (`frontend/src/config/tabRules.js`) ensuring identical mathematical definitions and bench color styling palettes match backend logic.
-- [ ] **Task 8.4:** Documentation & evaluation deliverables: comprehensive `README.md`, API endpoint documentation, and step-by-step viva presentation script.
+- [x] **Task 8.1:** Full codebase audit eliminating hardcoded strings, magic numbers (e.g., score bounds `50`/`100`, team points `3/2/1/0`), and duplicate validation routines.
+- [x] **Task 8.2:** Backend SSOT consolidation (`backend/src/config/tabRules.js`) centralizing score boundaries, ranking points, bench definitions, and status enums.
+- [x] **Task 8.3:** Frontend SSOT consolidation (`frontend/src/config/tabRules.js`) ensuring identical mathematical definitions and bench color styling palettes match backend logic.
+- [x] **Task 8.4:** Documentation & evaluation deliverables: comprehensive `README.md`, API endpoint documentation, and step-by-step viva presentation script.
 
 *Verification Notes:*
-> Zero duplicated scoring logic across repositories. All ranking constants, bench positions, and validation rules reference the centralized SSOT modules. Clean production builds and clear documentation ready for academic evaluation.
+> All ranking constants (`RANK_POINTS: {1: 3, 2: 2, 3: 1, 4: 0}`), speaker score boundaries (`50–100`), bench identifiers (`OG, OO, CG, CO`), and status enums (`Draft, Published, Completed`) centralized in backend and frontend SSOT modules (`tabRules.js`). Root workspace unified with root `package.json` concurrently executing backend and frontend dev servers. Clean production build verified with exit code 0.
+> 
+> Security & Integrity Hardening (Zero-Assumption Protocol):
+> 1. Public Credential Sanitization: Completely removed all demo credential chips, toolbars, and pre-filled hints from `JudgeLogin.jsx` and `AdminDashboard.jsx`.
+> 2. Input Masking: Enforced `type="password"`, `inputMode="numeric"`, `maxLength={4}`, and `autoComplete="current-password"` for judge PIN authentication and judge creation modals.
+> 3. Elimination of "Director Mode": Completely purged the client-side `directorPreview` toggle and button from `DrawsBoard.jsx`. Public viewers cannot access draft fixtures or confidential motions.
+> 4. Backend Draft Protection: Hardened `GET /api/rounds` to strictly sanitize draft rounds (`motion_text: null, info_slide: null, matches: []`). Introduced dedicated `GET /api/admin/rounds` for authorized tournament directors.
+

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../api/client';
 import BenchBadge from '../../components/common/BenchBadge';
+import TeamDossierModal from '../../components/common/TeamDossierModal';
 import { Trophy, RefreshCw, AlertCircle, ShieldAlert } from 'lucide-react';
 
 function toRoman(num) {
@@ -25,6 +26,7 @@ export default function TeamStandings() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [selectedTeamId, setSelectedTeamId] = useState(null);
 
   const fetchStandings = async (showRefreshIndicator = false) => {
     if (showRefreshIndicator) setIsRefreshing(true);
@@ -188,9 +190,14 @@ export default function TeamStandings() {
                       {/* Team Name & Institution */}
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-2">
-                          <span className="font-serif text-base font-bold text-ink-900 group-hover:text-gold-deep transition-colors">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedTeamId(team.team_id)}
+                            className="font-serif text-base font-bold text-ink-900 hover:text-gold-deep border-b border-dotted border-transparent hover:border-gold-deep transition-all duration-200 cursor-pointer text-left focus:outline-hidden"
+                            title={`View dossier and round breakdown for ${team.team_name}`}
+                          >
                             {team.team_name}
-                          </span>
+                          </button>
                           {team.is_swing && (
                             <span className="font-roman text-[10px] tracking-wider uppercase px-2 py-0.5 rounded border border-gold-light/60 bg-gold-light/20 text-gold-deep font-semibold">
                               Swing
@@ -243,6 +250,13 @@ export default function TeamStandings() {
           </table>
         </div>
       </div>
+
+      {/* Renaissance Team Dossier Modal */}
+      <TeamDossierModal
+        teamId={selectedTeamId}
+        isOpen={Boolean(selectedTeamId)}
+        onClose={() => setSelectedTeamId(null)}
+      />
     </div>
   );
 }

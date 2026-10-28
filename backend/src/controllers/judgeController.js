@@ -70,11 +70,11 @@ async function createJudge(req, res, next) {
 }
 
 // PUT /api/judges/:id
-// Update judge profile or toggle is_active boolean
+// Update adjudicator profile or toggle is_active boolean
 async function updateJudge(req, res, next) {
   try {
     const judgeId = parseInt(req.params.id, 10);
-    if (isNaN(judgeId)) {
+    if (isNaN(judgeId) || judgeId <= 0) {
       return res.status(400).json({ error: 'Invalid judge ID' });
     }
 
@@ -83,27 +83,68 @@ async function updateJudge(req, res, next) {
       return res.status(404).json({ error: 'Judge not found' });
     }
 
+    const current = existingJudge.rows[0];
     const { judge_name, institution, username, pin, is_active } = req.body;
 
-    const trimmedJudgeName = judge_name !== undefined ? judge_name.toString().trim() : undefined;
-    const trimmedInstitution = institution !== undefined ? institution.toString().trim() : undefined;
-    const trimmedUsername = username !== undefined ? username.toString().trim() : undefined;
-    const trimmedPin = pin !== undefined ? pin.toString().trim() : undefined;
+    // Detect if this is solely an is_active toggle
+    const isToggleOnly =
+      judge_name === undefined &&
+      institution === undefined &&
+      username === undefined &&
+      pin === undefined &&
+      typeof is_active === 'boolean';
 
-    if (trimmedUsername !== undefined) {
-      if (!trimmedUsername) {
-        return res.status(400).json({ error: 'username cannot be empty' });
+    let targetName = current.judge_name;
+    let targetInstitution = current.institution;
+    let targetUsername = current.username;
+    let targetPin = current.pin;
+    let targetActive = typeof is_active === 'boolean' ? is_active : current.is_active;
+
+    if (!isToggleOnly) {
+      // Validate judge_name
+      if (!judge_name || !judge_name.toString().trim()) {
+        return res.status(400).json({ error: 'Adjudicator name is required' });
       }
+      targetName = judge_name.toString().trim();
+
+      // Validate institution
+      if (!institution || !institution.toString().trim()) {
+        return res.status(400).json({ error: 'Institution is required' });
+      }
+      targetInstitution = institution.toString().trim();
+
+      // Validate username
+      if (!username || !username.toString().trim()) {
+        return res.status(400).json({ error: 'Username is required' });
+      }
+      targetUsername = username.toString().trim();
+      if (!/^[a-zA-Z0-9_]+$/.test(targetUsername)) {
+        return res.status(400).json({
+          error: 'Username must contain only letters, numbers, and underscores'
+        });
+      }
+
+      // Check username uniqueness across judges (excluding current judge_id)
       const dupCheck = await query(
         'SELECT judge_id FROM judges WHERE LOWER(username) = LOWER($1) AND judge_id != $2',
-        [trimmedUsername, judgeId]
+        [targetUsername, judgeId]
       );
       if (dupCheck.rows.length > 0) {
-        return res.status(400).json({ error: 'Judge username already exists' });
+        return res.status(409).json({ error: 'Username already allocated to another adjudicator' });
+      }
+
+      // Validate pin
+      if (pin !== undefined) {
+        if (!pin || !pin.toString().trim()) {
+          return res.status(400).json({ error: 'PIN is required' });
+        }
+        targetPin = pin.toString().trim();
+        if (!/^\d{4}$/.test(targetPin)) {
+          return res.status(400).json({ error: 'PIN must be exactly 4 numeric digits' });
+        }
       }
     }
 
-    const current = existingJudge.rows[0];
     const updateResult = await query(
       `UPDATE judges
        SET judge_name = $1,
@@ -112,21 +153,26 @@ async function updateJudge(req, res, next) {
            pin = $4,
            is_active = $5
        WHERE judge_id = $6
-       RETURNING *`,
-      [
-        trimmedJudgeName !== undefined ? trimmedJudgeName : current.judge_name,
-        trimmedInstitution !== undefined ? trimmedInstitution : current.institution,
-        trimmedUsername !== undefined ? trimmedUsername : current.username,
-        trimmedPin !== undefined ? trimmedPin : current.pin,
-        typeof is_active === 'boolean' ? is_active : current.is_active,
-        judgeId
-      ]
+       RETURNING judge_id, judge_name, institution, username, is_active`,
+      [targetName, targetInstitution, targetUsername, targetPin, targetActive, judgeId]
     );
 
-    return res.status(200).json(updateResult.rows[0]);
+    const updated = updateResult.rows[0];
+
+    return res.status(200).json({
+      message: 'Adjudicator records updated successfully',
+      judge: {
+        id: updated.judge_id,
+        judge_id: updated.judge_id,
+        judge_name: updated.judge_name,
+        institution: updated.institution,
+        username: updated.username,
+        is_active: updated.is_active
+      }
+    });
   } catch (err) {
     if (err.code === '23505') {
-      return res.status(400).json({ error: 'Judge username already exists' });
+      return res.status(409).json({ error: 'Username already allocated to another adjudicator' });
     }
     return next(err);
   }

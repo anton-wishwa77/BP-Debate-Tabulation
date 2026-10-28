@@ -40,9 +40,31 @@ export const api = {
   loginJudge: (credentials) => client.post('/judges/login', credentials),
   getJudgeMatches: (judgeId) => client.get(`/judges/${judgeId}/matches`),
 
-  // Teams & Judges (read-only for public hub)
+  // Teams
   getTeams: () => client.get('/teams'),
+  getTeamById: (id) => client.get(`/teams/${id}`),
+  getTeamStats: (id) => client.get(`/teams/${id}/stats`),
+  createTeam: (team) => client.post('/teams', team),
+  updateTeam: (id, team) => client.put(`/teams/${id}`, team),
+  deleteTeam: (id) => client.delete(`/teams/${id}`),
+  addSwingTeams: () => client.post('/teams/swing'),
+
+  // Judges
   getJudges: () => client.get('/judges'),
+  createJudge: (judge) => client.post('/judges', judge),
+  updateJudge: (id, judge) => client.put(`/judges/${id}`, judge),
+  deleteJudge: (id) => client.delete(`/judges/${id}`),
+
+  // Rounds & Draw Administration
+  getAdminRounds: () => client.get('/admin/rounds'),
+  generateRound: (data) => client.post('/rounds/generate', data),
+  updateRound: (id, data) => client.patch(`/rounds/${id}`, data),
+  deleteRound: (id) => client.delete(`/rounds/${id}`),
+
+  // Admin Authentication & Maintenance
+  loginAdmin: (credentials) => client.post('/admin/login', credentials),
+  seedDatabase: () => client.post('/admin/seed'),
+  resetDatabase: () => client.post('/admin/reset'),
 };
 
 export default client;

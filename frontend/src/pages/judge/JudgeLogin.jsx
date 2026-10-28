@@ -50,12 +50,6 @@ export default function JudgeLogin() {
     }
   };
 
-  const handleQuickFill = (u, p) => {
-    setUsername(u);
-    setPin(p);
-    setError(null);
-  };
-
   return (
     <div className="max-w-md mx-auto py-8 sm:py-12">
       {/* Back Link */}
@@ -139,9 +133,11 @@ export default function JudgeLogin() {
               </div>
               <input
                 type="password"
-                maxLength={10}
+                inputMode="numeric"
+                maxLength={4}
+                pattern="[0-9]*"
                 value={pin}
-                onChange={(e) => setPin(e.target.value)}
+                onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
                 placeholder="••••"
                 className="w-full pl-9 pr-3 py-2 rounded-md bg-canvas-marble border border-sky-blue/70 focus:border-gold-deep focus:ring-1 focus:ring-gold-deep font-sans text-sm tracking-widest text-ink-900 outline-hidden transition-all placeholder:text-ink-400"
                 autoComplete="current-password"
@@ -159,41 +155,6 @@ export default function JudgeLogin() {
             <span>{loading ? 'Authenticating...' : 'Enter Sacred Chamber'}</span>
           </button>
         </form>
-
-        {/* Demo Credentials Quick-Fill Toolbar */}
-        <div className="mt-8 pt-5 border-t border-gold-light/40">
-          <span className="font-roman text-[10px] tracking-wider uppercase font-bold text-gold-deep block text-center mb-2.5">
-            Sri Lankan Circuit Demo Adjudicators
-          </span>
-          <div className="grid grid-cols-1 gap-2 text-left">
-            <button
-              type="button"
-              onClick={() => handleQuickFill('dinesh_f', '1234')}
-              className="px-2.5 py-1.5 rounded-md bg-sky-light/40 hover:bg-sky-light/80 border border-sky-blue/50 text-[11px] font-sans flex items-center justify-between text-ink-800 transition-colors"
-            >
-              <span className="font-semibold">Dinesh Fernando (UoC)</span>
-              <span className="font-mono text-gold-deep">dinesh_f / 1234</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleQuickFill('sanjeewa_s', '4321')}
-              className="px-2.5 py-1.5 rounded-md bg-sky-light/40 hover:bg-sky-light/80 border border-sky-blue/50 text-[11px] font-sans flex items-center justify-between text-ink-800 transition-colors"
-            >
-              <span className="font-semibold">Sanjeewa Senanayake (Ruhuna)</span>
-              <span className="font-mono text-gold-deep">sanjeewa_s / 4321</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleQuickFill('kavindi_h', '7890')}
-              className="px-2.5 py-1.5 rounded-md bg-sky-light/40 hover:bg-sky-light/80 border border-sky-blue/50 text-[11px] font-sans flex items-center justify-between text-ink-800 transition-colors"
-            >
-              <span className="font-semibold">Kavindi Herath (Moratuwa)</span>
-              <span className="font-mono text-gold-deep">kavindi_h / 7890</span>
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );

@@ -76,20 +76,46 @@ async function getAllRounds(req, res, next) {
       });
     }
 
-    // Combine into full nested rounds array
-    const fullRounds = rounds.map((r) => ({
-      round_id: r.round_id,
-      round_number: r.round_number,
-      motion_text: r.motion_text,
-      info_slide: r.info_slide,
-      status: r.status,
-      matches: matchesByRound[r.round_id] || []
-    }));
+    // Check if requester has admin authorization (via route, query, or flag)
+    const isAdmin = Boolean(req.isAdmin || req.query.scope === 'admin');
 
-    return res.status(200).json(fullRounds);
+    // Combine into nested rounds array with strict draft protection for public view
+    const formattedRounds = rounds.map((r) => {
+      const isDraft = r.status === 'Draft';
+
+      // Security Guardrail: Public clients must NEVER receive draft pairings, benches, or motions
+      if (isDraft && !isAdmin) {
+        return {
+          round_id: r.round_id,
+          round_number: r.round_number,
+          motion_text: null,
+          info_slide: null,
+          status: 'Draft',
+          matches: []
+        };
+      }
+
+      return {
+        round_id: r.round_id,
+        round_number: r.round_number,
+        motion_text: r.motion_text,
+        info_slide: r.info_slide,
+        status: r.status,
+        matches: matchesByRound[r.round_id] || []
+      };
+    });
+
+    return res.status(200).json(formattedRounds);
   } catch (err) {
     return next(err);
   }
+}
+
+// Dedicated Admin Endpoint: GET /api/admin/rounds
+// Returns all rounds including confidential draft room matrices
+async function getAllRoundsAdmin(req, res, next) {
+  req.isAdmin = true;
+  return getAllRounds(req, res, next);
 }
 
 // POST /api/rounds/generate
@@ -269,6 +295,7 @@ async function deleteRound(req, res, next) {
 
 module.exports = {
   getAllRounds,
+  getAllRoundsAdmin,
   generateRound,
   updateRound,
   deleteRound

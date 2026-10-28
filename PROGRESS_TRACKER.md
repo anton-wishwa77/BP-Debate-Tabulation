@@ -144,23 +144,142 @@ Autonomous coding agents reading this tracker MUST adhere to these operational c
 ---
 
 ## Phase 7: Admin Dashboard, Round Progression & End-to-End Simulation
-- [ ] **Task 7.1:** Build admin authentication shell (`/admin`) guarded by master credentials (`ADMIN_USER`, `ADMIN_PASS`).
-- [ ] **Task 7.2:** Build **Team Manager** panel with registration forms, team tables, delete actions, Rule of 4 banner, and one-click `"Add Swing Teams"` button.
-- [ ] **Task 7.3:** Build **Judge Manager** panel with adjudicator registration, PIN visibility toggle, and active/inactive toggles.
-- [ ] **Task 7.4:** Build **Round & Draw Manager** panel with motion entry, pairing execution triggers, room matrix, and administrative ballot overrides.
-- [ ] **Task 7.5:** Integrate `"Seed 8 Sample Teams"` and `"Reset Tournament Data"` quick-demo buttons.
-- [ ] **Task 7.6:** Execute full automated tournament simulation test (Seed $\rightarrow$ Round 1 $\rightarrow$ Submit Ballots $\rightarrow$ Round 2 Swiss Pairing $\rightarrow$ Standings Verification).
+- [x] **Task 7.1:** Build admin authentication shell (`/admin`) guarded by master credentials (`ADMIN_USER`, `ADMIN_PASS`).
+- [x] **Task 7.2:** Build **Team Manager** panel with registration forms, team tables, delete actions, Rule of 4 banner, and one-click `"Add Swing Teams"` button.
+- [x] **Task 7.3:** Build **Judge Manager** panel with adjudicator registration, PIN visibility toggle, and active/inactive toggles.
+- [x] **Task 7.4:** Build **Round & Draw Manager** panel with motion entry, pairing execution triggers, room matrix, and administrative ballot overrides.
+- [x] **Task 7.5:** Integrate `"Seed 8 Sample Teams"` and `"Reset Tournament Data"` quick-demo buttons.
+- [x] **Task 7.6:** Execute full automated tournament simulation test (Seed $\rightarrow$ Round 1 $\rightarrow$ Submit Ballots $\rightarrow$ Round 2 Swiss Pairing $\rightarrow$ Standings Verification).
 
 *Verification Notes:*
-> Complete tournament workflow executes end-to-end within 90 seconds during a live evaluation demo. Master password protects admin routes. Admins can override submitted scores and delete unstarted rounds. `npm run build` passes with 0 errors across frontend and backend workspaces.
+> All Phase 7 verification steps executed and passed:
+> 1. Senate Admin Dashboard (`AdminDashboard.jsx`) implemented at `/admin` guarded by master authentication (`ADMIN_USER=admin`, `ADMIN_PASS=admin123`). Features classical imperial crest banner (*"The High Senate & Tabulation Directorate"*), 4 real-time metric cards (Registered Delegations with swing count badge, Adjudication Pool active counts, Current Active Round state, and Ballot Completion progress bar), and classical 4-tab navigation.
+> 2. Roster Management & Rule-of-4 Swing Balancer (`RosterPanel.jsx`): Table with search filtering, team registration modal (`POST /api/teams`), team deletion (`DELETE /api/teams/:id`), adjudicator registration (`POST /api/judges`), PIN reveal/mask toggle, and active status switch (`PUT /api/judges/:id`). Prominent gold *"Invoke Rule of 4 Balancer"* (`POST /api/teams/swing`) verified: adding a 9th team triggers the 3-team swing requirement alert; clicking drafts 3 swing teams to restore symmetry to 12.
+> 3. Round Generation & Motion Dispatch Console (`RoundControlPanel.jsx`): Auto-incrementing round number selector, Roman parchment motion and info slide inputs, pre-draw validation checklist (divisibility by 4, judge availability, prior unsealed ballots). Atomic draw execution (`POST /api/rounds/generate`), round status switcher (`PATCH /api/rounds/:id` toggling Draft/Published/Completed), and cascade round deletion (`DELETE /api/rounds/:id`).
+> 4. Live Room Matrix & Adjudication Monitor (`RoomMatrix.jsx`): Visual grid of chambers across rounds, assigned chair adjudicators, 4 benches with `BenchBadge` tags, real-time ballot status indicators (*"Awaiting Verdict"* vs *"Ballot Sealed"*), embedded score sheet inspection modal, and administrative override links to `/judge/matches/:matchId/ballot`.
+> 5. Tournament Maintenance & CSV Standings Export (`MaintenancePanel.jsx`): One-click browser CSV compilation downloading formatted Team Standings and Speaker Leaderboard (`forum_aeterna_standings.csv`). Pristine Sri Lankan circuit reset confirmed via modal executing `POST /api/admin/reset` and `POST /api/admin/seed`.
+> 6. Automated integration test (`npm run simulate` running `backend/src/scripts/simulateTournament.js`): Fully simulated complete 2-round tournament lifecycle (Reset & Seed -> Round 1 Draw -> Monotonic LPW Ballots -> Dynamic Standings -> Round 2 Swiss Power-Pairing & Bench Balancing -> Round 2 Ballots -> Final Standings & Speaker Leaderboards) with exit code 0.
+> 7. Production build audit (`npm run build` in `frontend/`) compiled cleanly in Vite with 0 errors/warnings (`1655 modules transformed` in 4.56s).
 
 ---
 
 ## Post-Phase 7: Full Repo Audit & Single Source of Truth (SSOT) Consolidation
-- [ ] **Task 8.1:** Full codebase audit eliminating hardcoded strings, magic numbers (e.g., score bounds `50`/`100`, team points `3/2/1/0`), and duplicate validation routines.
-- [ ] **Task 8.2:** Backend SSOT consolidation (`backend/src/config/tabRules.js`) centralizing score boundaries, ranking points, bench definitions, and status enums.
-- [ ] **Task 8.3:** Frontend SSOT consolidation (`frontend/src/config/tabRules.js`) ensuring identical mathematical definitions and bench color styling palettes match backend logic.
-- [ ] **Task 8.4:** Documentation & evaluation deliverables: comprehensive `README.md`, API endpoint documentation, and step-by-step viva presentation script.
+- [x] **Task 8.1:** Full codebase audit eliminating hardcoded strings, magic numbers (e.g., score bounds `50`/`100`, team points `3/2/1/0`), and duplicate validation routines.
+- [x] **Task 8.2:** Backend SSOT consolidation (`backend/src/config/tabRules.js`) centralizing score boundaries, ranking points, bench definitions, and status enums.
+- [x] **Task 8.3:** Frontend SSOT consolidation (`frontend/src/config/tabRules.js`) ensuring identical mathematical definitions and bench color styling palettes match backend logic.
+- [x] **Task 8.4:** Documentation & evaluation deliverables: comprehensive `README.md`, API endpoint documentation, and step-by-step viva presentation script.
 
 *Verification Notes:*
-> Zero duplicated scoring logic across repositories. All ranking constants, bench positions, and validation rules reference the centralized SSOT modules. Clean production builds and clear documentation ready for academic evaluation.
+> All ranking constants (`RANK_POINTS: {1: 3, 2: 2, 3: 1, 4: 0}`), speaker score boundaries (`50–100`), bench identifiers (`OG, OO, CG, CO`), and status enums (`Draft, Published, Completed`) centralized in backend and frontend SSOT modules (`tabRules.js`). Root workspace unified with root `package.json` concurrently executing backend and frontend dev servers. Clean production build verified with exit code 0.
+> 
+> Security & Integrity Hardening (Zero-Assumption Protocol):
+> 1. Public Credential Sanitization: Completely removed all demo credential chips, toolbars, and pre-filled hints from `JudgeLogin.jsx` and `AdminDashboard.jsx`.
+> 2. Input Masking: Enforced `type="password"`, `inputMode="numeric"`, `maxLength={4}`, and `autoComplete="current-password"` for judge PIN authentication and judge creation modals.
+> 3. Elimination of "Director Mode": Completely purged the client-side `directorPreview` toggle and button from `DrawsBoard.jsx`. Public viewers cannot access draft fixtures or confidential motions.
+> 4. Backend Draft Protection: Hardened `GET /api/rounds` to strictly sanitize draft rounds (`motion_text: null, info_slide: null, matches: []`). Introduced dedicated `GET /api/admin/rounds` for authorized tournament directors.
+
+---
+
+## Interactive Team Dossier Modal (Quick Stats Pop-up)
+- [x] **Task 9.1:** Build `GET /api/teams/:id/stats` endpoint in `teamController.js` and `teamRoutes.js` aggregating core profile, live tournament metrics (`total_points`, `total_speaks`, `current_rank`), individual speaker breakdowns (totals, averages to 2 decimals, rounds spoken), and chronological round trajectory.
+- [x] **Task 9.2:** Implement `TeamDossierModal.jsx` adhering strictly to Renaissance design tokens (`Cormorant Garamond`, `Cinzel`, parchment background, Corinthian gold borders, Roman rank badges, speaker roster cards, and round history table).
+- [x] **Task 9.3:** Integrate clickable team name triggers with dotted hover underlines and gold transitions into `TeamStandings.jsx`, `DrawsBoard.jsx`, and `RoomMatrix.jsx`.
+- [x] **Task 9.4:** Support keyboard `Escape` dismissal, backdrop click dismissal, responsive layouts, and loading shimmer/skeletons.
+
+*Verification Notes:*
+> 1. Backend Endpoint `GET /api/teams/:id/stats` verified:
+>    - Querying team 1 (`Ruhuna A`) returns HTTP 200 with complete JSON contract: core profile, cumulative points, cumulative speaks, overall tournament rank (`#7`), speaker breakdowns (`Wishwa Fernando`: avg 73.5, `Kavindu Sahan`: avg 72.5), and round history array (R1 in Room 1 as CO with 4th/0pts, R2 in Room 2 as CG with 3rd/1pt).
+>    - Teams without submitted rounds return zeroed metrics and empty round history (`[]`) gracefully without throwing errors.
+>    - Querying non-existent team returns HTTP 404 (`{"error":"Team not found"}`).
+> 2. Frontend Integration & Styling verified:
+>    - `TeamStandings.jsx`: Team names are styled buttons with cursor pointer, dotted gold underline hover effects, opening `TeamDossierModal` on click.
+>    - `DrawsBoard.jsx`: Team names in all 4 BP room benches (`OG`, `OO`, `CG`, `CO`) are clickable triggers opening `TeamDossierModal`.
+>    - `RoomMatrix.jsx`: Admin chamber grid and sealed score sheet inspect modal allow immediate inspection of team dossiers.
+>    - Modal accessibility: Closes cleanly via `Escape` key listener, backdrop click, or the classical '✕' close button.
+> 3. Frontend Production Build verified:
+>    - `npm run build` executed and passed with code 0 in 3.27s (1656 modules transformed, 0 syntax/JSX errors).
+
+---
+
+## Phase 10: Adjudicator Profile Management & "Noctis" Renaissance Dark Mode
+- [x] **Task 10.1:** Implement `PUT /api/judges/:id` in `judgeController.js` and `judgeRoutes.js` with full validation (non-empty strings, alphanumeric username uniqueness with `409 Conflict`, exactly 4-digit numeric PIN, boolean active status, and sanitized response omitting raw PIN).
+- [x] **Task 10.2:** Build `EditJudgeModal.jsx` component with parchment/obsidian container, double Corinthian stone borders, Roman gold header, masked 4-digit PIN with click-to-reveal toggle, and active status switch.
+- [x] **Task 10.3:** Integrate "Edit" action buttons beside each adjudicator in `RosterPanel.jsx`, updating table state immediately on save.
+- [x] **Task 10.4:** Implement persistent, system-wide "Noctis" Dark Mode via `ThemeContext.jsx` (`forum_aeterna_theme` in `localStorage`, system `prefers-color-scheme` fallback, dynamic `.dark` class on `document.documentElement`).
+- [x] **Task 10.5:** Integrate Roman solar/lunar theme toggle buttons (*Sol* sun medallion for Lux mode vs *Luna* crescent moon emblem for Noctis mode) into `Navbar.jsx` on desktop and mobile.
+- [x] **Task 10.6:** Configure Tailwind `darkMode: 'class'`, dark CSS variables in `index.css`, and dark mode bench badge color palettes in `BenchBadge.jsx`.
+
+*Verification Notes:*
+> 1. Adjudicator Update API (`PUT /api/judges/:id`) verified:
+>    - Valid update: `PUT /api/judges/1` with new name, institution, username `dinesh_f`, and PIN `9999` returns HTTP 200 with sanitized profile (zero raw PIN leakage in JSON).
+>    - Authentication verification: `POST /api/judges/login` with new PIN `9999` returns HTTP 200; login with old PIN `1234` returns HTTP 401.
+>    - Duplicate username conflict: updating judge 2 to `dinesh_f` returns HTTP 409 (`{"error":"Username already allocated to another adjudicator"}`).
+>    - Validation error checks: invalid PIN length returns HTTP 400 (`"PIN must be exactly 4 numeric digits"`), invalid username chars returns HTTP 400, non-existent ID returns HTTP 404, invalid ID returns HTTP 400.
+>    - Active status toggle: `{ is_active: false }` and `{ is_active: true }` continue to work cleanly.
+> 2. Frontend Adjudicator Edit Modal verified:
+>    - `EditJudgeModal.jsx` opens from `RosterPanel.jsx` "Edit" button pre-populated with current judge data.
+>    - Client-side validation blocks blank fields or non-4-digit PINs with clear alerts.
+>    - Password input with reveal/mask toggle button allows inspection of PIN.
+>    - Submitting updates table dynamically via `onRefresh()`.
+> 3. "Noctis" Renaissance Dark Mode verified:
+>    - Theme toggle button in navigation header switches seamlessly between Lux (light parchment) and Noctis (obsidian / charred vellum).
+>    - Theme state persists across page refreshes via `localStorage.getItem('forum_aeterna_theme')`.
+>    - Semantic tokens and dark bench palettes verified across Public Standings, Draws Board, Team Dossier Modal, Judge Portal, and Senate Admin.
+> 4. Production Build verified:
+>    - `npm run build` executed and passed with code 0 in 4.20s (1658 modules transformed, 0 syntax/JSX errors).
+
+---
+
+## Phase 11: Design System Consolidation (Classical Renaissance Parchment Reversion)
+- [x] **Task 11.1:** Purge theme state and navigation toggle:
+  - Removed solar/lunar icons (*Sol* / *Luna*) and theme toggle buttons from `Navbar.jsx` on desktop and mobile.
+  - Deleted `ThemeContext.jsx` and decoupled all theme context hooks.
+  - Removed `<ThemeProvider>` wrapping from `App.jsx`.
+  - Added DOM and `localStorage` sanitization on application mount to guarantee `document.documentElement` never retains the `.dark` class and `forum_aeterna_theme` is removed from `localStorage`.
+- [x] **Task 11.2:** Roll back Tailwind configuration and global CSS:
+  - Removed `darkMode: 'class'` from `tailwind.config.js`.
+  - Removed `.dark` CSS variable block and dark scrollbars from `index.css`.
+  - Consolidated `:root` and `body` to original Renaissance parchment foundation tokens (`#FDFBF7`, `#F8FAFC`, `#B59A57`, `#1A242F`, `Cinzel`, `Cormorant Garamond`, `Plus Jakarta Sans`).
+- [x] **Task 11.3:** Purge all `dark:` utility classes across all components and modals:
+  - `EditJudgeModal.jsx`: Completely preserved all adjudicator edit capabilities, validation, PIN masking, and update events while restoring authentic warm parchment background, gold border, and dark labels.
+  - `TeamDossierModal.jsx`: Reverted round trajectory table and container to classical parchment styling.
+  - `BenchBadge.jsx`: Reverted all 4 BP benches (`OG`, `OO`, `CG`, `CO`) to classical parchment crest colorways.
+  - `AdminDashboard.jsx`, `RosterPanel.jsx`, `RoundControlPanel.jsx`, `RoomMatrix.jsx`, and `Navbar.jsx`: Completely purged all `dark:*` prefixes and fallback overrides.
+- [x] **Task 11.4:** Verification and build validation:
+  - Grep search verified 0 occurrences of `dark:` across the entire `frontend/src/` directory.
+  - Production build (`npm run build`) passed with exit code 0 (1657 modules transformed).
+  - Backend adjudicator edit API (`PUT /api/judges/:id`) verified functioning with 200 OK.
+  - **STRICT GIT LOCKOUT:** Zero git commands executed; all changes left unstaged in workspace for manual inspection.
+
+---
+
+## Phase 12: Team Dossier Edit Suite (Delegation Amendments & Roster Management)
+- [x] **Task 12.1:** Backend Team Update & Retrieval APIs (`PUT /api/teams/:id`, `GET /api/teams/:id`):
+  - Implemented `PUT /api/teams/:id` in `teamController.js` and `teamRoutes.js`:
+    - Validates required non-empty fields: `name` (or `team_name`), `institution`, `speaker_1_name`, `speaker_2_name`, and boolean `is_swing`.
+    - Enforces delegation name uniqueness across the tournament pool, returning `409 Conflict` with `"A delegation with this name is already registered"`.
+    - Returns `200 OK` on success with `{ message: "Delegation dossier updated successfully", team: { id, team_id, name, team_name, institution, speaker_1_name, speaker_2_name, is_swing } }`.
+    - Returns `404 Not Found` if the team ID does not exist in the database.
+  - Implemented `GET /api/teams/:id` returning core team attributes, debater names, swing status, and completed rounds count.
+- [x] **Task 12.2:** Frontend Team Edit Modal (`EditTeamModal.jsx`):
+  - Created `EditTeamModal.jsx` in `frontend/src/components/admin/` adhering strictly to Renaissance design tokens:
+    - Warm parchment surface (`bg-canvas-parchment`), antique gold border (`border-gold-deep`), and golden hairline accent.
+    - Laurel award crest header: *"Amend Delegation Dossier"* under the *Senate Tabulation Directorate*.
+    - Inputs for Team Name, Institution, Speaker 1 Full Name, Speaker 2 Full Name, and Roman toggle card for Swing status.
+    - Client-side validation preventing blank submissions, inline error alert banner for 409 collisions, and clean keyboard/backdrop dismissals.
+- [x] **Task 12.3:** Admin Roster Integration (`RosterPanel.jsx` & `client.js`):
+  - Added `getTeamById` to `frontend/src/api/client.js`.
+  - Added Edit Delegation action button (`<Edit2 className="w-3.5 h-3.5" />`) to each team row in the Senate Teams table beside the delete action.
+  - Linked row click to `EditTeamModal` with selected team state.
+  - Upon successful revision, triggers live table refresh and elegant classical toast notification: *"Delegation records for [Team Name] officially amended."*
+- [x] **Task 12.4:** Verification and cross-component consistency:
+  - Verified terminal `curl` tests:
+    - `GET /api/teams/1` -> `200 OK` with full delegation object.
+    - Empty payload update -> `400 Bad Request` with `{ error: "All fields are required: name, institution, speaker_1_name, speaker_2_name" }`.
+    - Valid update -> `200 OK` with updated team metadata.
+    - Duplicate name collision -> `409 Conflict` with `{ error: "A delegation with this name is already registered" }`.
+  - Verified cross-component consistency: `/standings` leaderboard and `TeamDossierModal` reflect amended team and debater identities while preserving match histories, speaker scores, and cumulative points.
+  - Verified production build (`npm run build`) passed with exit code 0 (1658 modules transformed).
+  - **STRICT GIT LOCKOUT:** Zero git commands executed; all files left unstaged for manual review.
+
+

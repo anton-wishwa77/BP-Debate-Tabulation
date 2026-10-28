@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../api/client';
 import BenchBadge from '../../components/common/BenchBadge';
+import TeamDossierModal from '../../components/common/TeamDossierModal';
 import {
   Scroll,
   UserCheck,
@@ -38,7 +39,7 @@ export default function DrawsBoard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [directorPreview, setDirectorPreview] = useState(false);
+  const [selectedTeamId, setSelectedTeamId] = useState(null);
 
   const fetchRounds = async (showIndicator = false) => {
     if (showIndicator) setIsRefreshing(true);
@@ -66,7 +67,8 @@ export default function DrawsBoard() {
 
   const currentRound = rounds.find((r) => r.round_number === selectedRoundNumber) || rounds[0];
 
-  const isRoundPublic = currentRound && (currentRound.status === 'Published' || currentRound.status === 'Completed' || directorPreview);
+  // Security Guardrail: Public viewers can ONLY view published or completed rounds.
+  const isRoundPublic = currentRound && (currentRound.status === 'Published' || currentRound.status === 'Completed');
 
   return (
     <div className="space-y-8">
@@ -186,8 +188,8 @@ export default function DrawsBoard() {
                     </span>
                   </div>
 
-                  {/* Info Slide Callout (if present) */}
-                  {currentRound.info_slide && currentRound.info_slide.trim() !== '' && (
+                  {/* Info Slide Callout (only if published/completed) */}
+                  {isRoundPublic && currentRound.info_slide && currentRound.info_slide.trim() !== '' && (
                     <div className="rounded-lg bg-sky-light/40 border border-sky-blue/60 p-4 font-sans text-xs sm:text-sm text-ink-800 leading-relaxed">
                       <div className="font-roman text-[11px] tracking-wider uppercase font-bold text-gold-deep mb-1">
                         Information Slide
@@ -196,38 +198,44 @@ export default function DrawsBoard() {
                     </div>
                   )}
 
-                  {/* Motion Text */}
+                  {/* Motion Text or Sealed Decree */}
                   <div className="py-2 text-center sm:text-left">
-                    <p className="font-serif text-2xl sm:text-3xl text-ink-900 italic font-semibold leading-relaxed tracking-wide">
-                      "{currentRound.motion_text}"
-                    </p>
+                    {isRoundPublic && currentRound.motion_text ? (
+                      <p className="font-serif text-2xl sm:text-3xl text-ink-900 italic font-semibold leading-relaxed tracking-wide">
+                        "{currentRound.motion_text}"
+                      </p>
+                    ) : (
+                      <p className="font-serif text-2xl sm:text-3xl text-ink-600 italic font-medium leading-relaxed tracking-wide">
+                        "Motion Sealed by Decree of the Senate"
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
 
               {/* Pairings Content: Sealed Guard or Public Grid */}
               {!isRoundPublic ? (
-                // Draft / Sealed Notice Card
-                <div className="rounded-xl bg-canvas-parchment border border-amber-300 p-8 sm:p-10 text-center shadow-xs">
-                  <div className="w-12 h-12 rounded-full bg-amber-50 border border-amber-300 flex items-center justify-center text-amber-700 mx-auto mb-4">
-                    <Lock className="w-6 h-6" />
+                // Imposing Renaissance Parchment Notice
+                <div className="rounded-2xl bg-canvas-parchment border-2 border-gold-deep/60 p-8 sm:p-12 text-center shadow-md relative overflow-hidden">
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-blue via-gold-deep to-sky-blue" />
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-gold-light/40 via-canvas-parchment to-sky-light/80 border-2 border-gold-deep/50 flex items-center justify-center text-gold-deep mx-auto mb-4 shadow-xs">
+                    <Lock className="w-8 h-8" />
                   </div>
-                  <h3 className="font-serif text-2xl font-bold text-ink-900 mb-2">
-                    Pairings for Round {toRoman(currentRound.round_number)} are Currently Sealed
+                  <span className="font-roman text-[10px] tracking-[0.25em] text-gold-deep uppercase font-bold block mb-1">
+                    Curia Tabularii • Chamber Decree
+                  </span>
+                  <h3 className="font-serif text-2xl sm:text-3xl font-bold text-ink-900 mb-3">
+                    Chambers for Round {toRoman(currentRound.round_number)} are Currently Sealed
                   </h3>
-                  <p className="font-sans text-xs sm:text-sm text-ink-600 max-w-lg mx-auto mb-6">
-                    Room allocations and bench fixtures remain private while the draw is in Draft status. The Adjudication Core will publish the rooms upon round release.
+                  <p className="font-serif italic text-base sm:text-lg text-ink-800 max-w-xl mx-auto leading-relaxed mb-4">
+                    "The Senate has not yet released the motion or chamber allocations for this round. Please await the official herald."
                   </p>
-                  <button
-                    onClick={() => setDirectorPreview(true)}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-md font-roman text-xs tracking-wider uppercase text-ink-800 bg-sky-light/60 hover:bg-sky-light border border-sky-blue/70 shadow-xs transition-all"
-                  >
-                    <Eye className="w-4 h-4 text-gold-deep" />
-                    <span>Preview Draft Pairings (Director Mode)</span>
-                  </button>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-deep/10 border border-gold-deep/30 text-gold-deep font-roman text-xs uppercase tracking-wider">
+                    <span>Awaiting Executive Publication</span>
+                  </div>
                 </div>
               ) : (
-                // Published / Preview Room Pairings Grid
+                // Published Room Pairings Grid
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="font-serif text-xl sm:text-2xl font-bold text-ink-900 flex items-center gap-2">
@@ -236,12 +244,6 @@ export default function DrawsBoard() {
                         ({currentRound.matches?.length || 0} Matches)
                       </span>
                     </h3>
-
-                    {directorPreview && currentRound.status === 'Draft' && (
-                      <span className="font-roman text-[11px] tracking-wider uppercase px-2.5 py-1 rounded bg-amber-100 text-amber-900 border border-amber-300">
-                        Director Preview Active
-                      </span>
-                    )}
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -308,9 +310,14 @@ export default function DrawsBoard() {
                                   )}
                                 </div>
                                 <div>
-                                  <div className="font-serif font-bold text-sm text-ink-900 truncate">
+                                  <button
+                                    type="button"
+                                    onClick={() => setSelectedTeamId(p.team_id)}
+                                    className="font-serif font-bold text-sm text-ink-900 hover:text-gold-deep border-b border-dotted border-transparent hover:border-gold-deep transition-all duration-200 cursor-pointer text-left truncate block max-w-full focus:outline-hidden"
+                                    title={`View dossier and stats for ${p.team_name}`}
+                                  >
                                     {p.team_name}
-                                  </div>
+                                  </button>
                                   <div className="font-sans text-[11px] text-ink-600 truncate">
                                     {p.team_institution || p.institution}
                                   </div>
@@ -328,6 +335,13 @@ export default function DrawsBoard() {
           )}
         </div>
       )}
+
+      {/* Renaissance Team Dossier Modal */}
+      <TeamDossierModal
+        teamId={selectedTeamId}
+        isOpen={Boolean(selectedTeamId)}
+        onClose={() => setSelectedTeamId(null)}
+      />
     </div>
   );
 }

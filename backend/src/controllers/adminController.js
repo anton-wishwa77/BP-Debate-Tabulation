@@ -29,7 +29,25 @@ async function resetDatabase(req, res, next) {
   }
 }
 
+// POST /api/admin/login
+// Master admin credential verification
+async function loginAdmin(req, res, next) {
+  try {
+    const { username, password } = req.body;
+    const adminUser = process.env.ADMIN_USER || 'admin';
+    const adminPass = process.env.ADMIN_PASS || 'admin123';
+
+    if (username === adminUser && password === adminPass) {
+      return res.status(200).json({ success: true, username: adminUser });
+    }
+    return res.status(401).json({ error: 'Invalid Senate administrator credentials' });
+  } catch (err) {
+    return next(err);
+  }
+}
+
 module.exports = {
   seedDatabase,
-  resetDatabase
+  resetDatabase,
+  loginAdmin
 };
